@@ -1,46 +1,1770 @@
-<!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Indica+ | Administração</title>
-<style>
-:root{--p:#6d28d9;--bg:#f5f3ff;--card:#fff;--text:#241b35;--muted:#756b86;--line:#e7e0f0}
-*{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
-.app{display:flex;min-height:100vh}.side{position:fixed;inset:0 auto 0 0;width:230px;background:#24133f;color:#fff;padding:22px 15px}.brand{font-size:26px;font-weight:800;padding:8px 10px 28px}.brand span{color:#bda0ff}.nav{display:grid;gap:7px}.nav button{border:0;background:transparent;color:#ddd1f3;padding:12px;border-radius:9px;text-align:left;cursor:pointer}.nav button.active,.nav button:hover{background:#5b25a9;color:#fff}
-.main{margin-left:230px;width:calc(100% - 230px);padding:28px;max-width:1500px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.top h1{margin:0;font-size:27px}.top p{margin:5px 0;color:var(--muted)}.refresh{border:0;background:var(--p);color:#fff;padding:11px 16px;border-radius:8px;font-weight:700;cursor:pointer}
-.cards{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:22px}.card,.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 4px 18px #3b236510}.card{padding:18px}.num{font-size:29px;font-weight:800;color:var(--p)}.label{font-size:12px;color:var(--muted);margin-top:4px}.panel{overflow:hidden;margin-bottom:20px}.panel h2{font-size:17px;margin:0}.panel-head{padding:17px 19px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between}.tab{display:none}.tab.active{display:block}.campaign{padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:14px}.campaign strong{display:block;margin-bottom:4px}.muted{font-size:13px;color:var(--muted)}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:12px 15px;border-bottom:1px solid var(--line)}th{background:#faf8ff;font-size:11px;color:#685d78;text-transform:uppercase}tr:hover td{background:#fcfaff}.wrap{overflow:auto}.empty,.loading{text-align:center;padding:38px;color:var(--muted)}.badge{display:inline-block;padding:5px 9px;border-radius:999px;background:#eee8ff;color:#5b25a9;font-size:11px;font-weight:700}.ok{background:#e7f7ee;color:#16834a}.warn{background:#fff3dd;color:#a96600}.danger{background:#fde8e8;color:#b52f2f}.error{display:none;background:#fff0f0;color:#a52d2d;padding:13px;border-radius:9px;margin-bottom:18px}
-@media(max-width:1100px){.cards{grid-template-columns:repeat(3,1fr)}}@media(max-width:700px){.side{display:none}.main{margin:0;width:100%;padding:16px}.cards{grid-template-columns:repeat(2,1fr)}.campaign{grid-template-columns:1fr}.top h1{font-size:22px}}
-</style></head><body>
-<div class="app"><aside class="side"><div class="brand">Indica<span>+</span></div><div class="nav">
-<button class="active" data-tab="dashboard">📊 Dashboard</button><button data-tab="referrals">📝 Indicações</button><button data-tab="enrollments">⏳ Matrículas</button><button data-tab="students">👨‍🎓 Alunos</button><button data-tab="tickets">🎟️ Tickets</button><button data-tab="prizes">🎁 Prêmios</button><button data-tab="campaign">🎨 Campanha</button>
-</div></aside>
-<main class="main"><div class="top"><div><h1 id="title">Dashboard</h1><p>Central de controle da campanha Indica+</p></div><button class="refresh" onclick="loadAll()">↻ Atualizar</button></div>
-<div id="err" class="error"></div>
-<section id="tab-dashboard" class="tab active"><div class="cards">
-<div class="card"><div class="num" id="nStudents">0</div><div class="label">Alunos</div></div><div class="card"><div class="num" id="nReferrals">0</div><div class="label">Indicações</div></div><div class="card"><div class="num" id="nEnrollments">0</div><div class="label">Matrículas</div></div><div class="card"><div class="num" id="nWaiting">0</div><div class="label">Aguardando 7 dias</div></div><div class="card"><div class="num" id="nTickets">0</div><div class="label">Tickets disponíveis</div></div><div class="card"><div class="num" id="nPrizes">0</div><div class="label">Prêmios ativos</div></div></div>
-<div class="panel"><div class="panel-head"><h2>Campanha atual</h2><span id="campaignStatus" class="badge">—</span></div><div id="campaignBox" class="campaign"><div class="loading">Carregando...</div></div></div></section>
-<section id="tab-referrals" class="tab"><div class="panel"><div class="panel-head"><h2>Indicações</h2></div><div id="referralsBox" class="wrap"></div></div></section>
-<section id="tab-enrollments" class="tab"><div class="panel"><div class="panel-head"><h2>Matrículas</h2></div><div id="enrollmentsBox" class="wrap"></div></div></section>
-<section id="tab-students" class="tab"><div class="panel"><div class="panel-head"><h2>Alunos</h2></div><div id="studentsBox" class="wrap"></div></div></section>
-<section id="tab-tickets" class="tab"><div class="panel"><div class="panel-head"><h2>Tickets</h2></div><div id="ticketsBox" class="wrap"></div></div></section>
-<section id="tab-prizes" class="tab"><div class="panel"><div class="panel-head"><h2>Prêmios</h2></div><div id="prizesBox" class="wrap"></div></div></section>
-<section id="tab-campaign" class="tab"><div class="panel"><div class="panel-head"><h2>Campanha</h2></div><div id="campaignBox2" class="campaign"></div></div></section>
-</main></div>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Indica+ | Administração</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f5f3ff;
+      color: #1f2937;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    /* =========================
+       LOGIN
+    ========================= */
+
+    #loginScreen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background:
+        radial-gradient(circle at top left, #8b5cf6 0%, transparent 35%),
+        radial-gradient(circle at bottom right, #6d28d9 0%, transparent 35%),
+        #17112b;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+      background: white;
+      border-radius: 24px;
+      padding: 38px 32px;
+      box-shadow: 0 25px 70px rgba(0,0,0,.30);
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .logo-icon {
+      width: 70px;
+      height: 70px;
+      margin: 0 auto 14px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #6d28d9, #8b5cf6);
+      color: white;
+      font-size: 32px;
+      font-weight: bold;
+      box-shadow: 0 12px 30px rgba(109,40,217,.30);
+    }
+
+    .logo h1 {
+      font-size: 28px;
+      color: #4c1d95;
+    }
+
+    .logo p {
+      margin-top: 5px;
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .field {
+      margin-bottom: 18px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 7px;
+      color: #374151;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 14px 15px;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      outline: none;
+      transition: .2s;
+    }
+
+    .field input:focus {
+      border-color: #7c3aed;
+      box-shadow: 0 0 0 3px rgba(124,58,237,.12);
+    }
+
+    .login-button {
+      width: 100%;
+      border: 0;
+      padding: 15px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #6d28d9, #8b5cf6);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: .2s;
+      margin-top: 4px;
+    }
+
+    .login-button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 25px rgba(109,40,217,.25);
+    }
+
+    .login-button:disabled {
+      opacity: .6;
+      cursor: wait;
+      transform: none;
+    }
+
+    .error {
+      display: none;
+      margin-bottom: 16px;
+      padding: 12px;
+      border-radius: 10px;
+      background: #fee2e2;
+      color: #991b1b;
+      font-size: 14px;
+    }
+
+    .success {
+      display: none;
+      margin-bottom: 16px;
+      padding: 12px;
+      border-radius: 10px;
+      background: #dcfce7;
+      color: #166534;
+      font-size: 14px;
+    }
+
+    /* =========================
+       PAINEL
+    ========================= */
+
+    #adminScreen {
+      display: none;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      background: #17112b;
+      color: white;
+      padding: 15px 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .topbar-brand {
+      font-size: 21px;
+      font-weight: bold;
+    }
+
+    .topbar-brand span {
+      color: #a78bfa;
+    }
+
+    .admin-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .admin-name {
+      font-size: 14px;
+      color: #ddd6fe;
+    }
+
+    .logout-button {
+      border: 1px solid rgba(255,255,255,.25);
+      background: transparent;
+      color: white;
+      padding: 9px 14px;
+      border-radius: 9px;
+      cursor: pointer;
+    }
+
+    .logout-button:hover {
+      background: rgba(255,255,255,.08);
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: auto;
+      padding: 30px 20px;
+    }
+
+    .page-title {
+      margin-bottom: 25px;
+    }
+
+    .page-title h2 {
+      font-size: 28px;
+      color: #2e1065;
+    }
+
+    .page-title p {
+      margin-top: 5px;
+      color: #6b7280;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 17px;
+      padding: 22px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.06);
+      border: 1px solid #ede9fe;
+    }
+
+    .card-label {
+      color: #6b7280;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .card-number {
+      font-size: 31px;
+      font-weight: bold;
+      color: #4c1d95;
+    }
+
+    .section {
+      background: white;
+      border-radius: 17px;
+      padding: 22px;
+      margin-bottom: 22px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.05);
+      border: 1px solid #ede9fe;
+    }
+
+    .section h3 {
+      margin-bottom: 18px;
+      color: #2e1065;
+    }
+
+    .loading {
+      color: #6b7280;
+      padding: 10px 0;
+    }
+
+    .status-message {
+      padding: 13px;
+      border-radius: 10px;
+      background: #f3f4f6;
+      color: #4b5563;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 650px;
+    }
+
+    th,
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      color: #6b7280;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .badge-green {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .badge-yellow {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .badge-red {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .confirm-button {
+      border: 0;
+      padding: 8px 11px;
+      border-radius: 8px;
+      background: #6d28d9;
+      color: white;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .confirm-button:hover {
+      background: #5b21b6;
+    }
+
+    .empty {
+      padding: 25px;
+      text-align: center;
+      color: #9ca3af;
+    }
+
+    @media (max-width: 1000px) {
+      .cards {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 650px) {
+      .topbar {
+        padding: 13px 15px;
+      }
+
+      .admin-name {
+        display: none;
+      }
+
+      .container {
+        padding: 20px 14px;
+      }
+
+      .cards {
+        grid-template-columns: 1fr;
+      }
+
+      .login-card {
+        padding: 30px 22px;
+      }
+
+      .page-title h2 {
+        font-size: 23px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- =========================
+       TELA DE LOGIN
+  ========================== -->
+
+  <section id="loginScreen">
+
+    <div class="login-card">
+
+      <div class="logo">
+
+        <div class="logo-icon">
+          +
+        </div>
+
+        <h1>Indica+</h1>
+
+        <p>Painel Administrativo</p>
+
+      </div>
+
+      <div id="loginError" class="error"></div>
+
+      <div id="loginSuccess" class="success"></div>
+
+      <form id="loginForm">
+
+        <div class="field">
+
+          <label for="email">
+            E-mail
+          </label>
+
+          <input
+            type="email"
+            id="email"
+            autocomplete="username"
+            placeholder="Digite seu e-mail"
+            required
+          >
+
+        </div>
+
+        <div class="field">
+
+          <label for="password">
+            Senha
+          </label>
+
+          <input
+            type="password"
+            id="password"
+            autocomplete="current-password"
+            placeholder="Digite sua senha"
+            required
+          >
+
+        </div>
+
+        <button
+          type="submit"
+          class="login-button"
+          id="loginButton"
+        >
+          Entrar no painel
+        </button>
+
+      </form>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================
+       PAINEL ADMINISTRATIVO
+  ========================== -->
+
+  <section id="adminScreen">
+
+    <header class="topbar">
+
+      <div class="topbar-brand">
+        Indica<span>+</span>
+      </div>
+
+      <div class="admin-info">
+
+        <span
+          class="admin-name"
+          id="adminName"
+        >
+          Administrador
+        </span>
+
+        <button
+          class="logout-button"
+          id="logoutButton"
+        >
+          Sair
+        </button>
+
+      </div>
+
+    </header>
+
+
+    <main class="container">
+
+      <div class="page-title">
+
+        <h2>
+          Dashboard
+        </h2>
+
+        <p>
+          Visão geral da campanha e das indicações.
+        </p>
+
+      </div>
+
+
+      <!-- INDICADORES -->
+
+      <div class="cards">
+
+        <div class="card">
+          <div class="card-label">
+            Alunos
+          </div>
+
+          <div
+            class="card-number"
+            id="studentsCount"
+          >
+            0
+          </div>
+        </div>
+
+
+        <div class="card">
+          <div class="card-label">
+            Indicações
+          </div>
+
+          <div
+            class="card-number"
+            id="referralsCount"
+          >
+            0
+          </div>
+        </div>
+
+
+        <div class="card">
+          <div class="card-label">
+            Aguardando 7 dias
+          </div>
+
+          <div
+            class="card-number"
+            id="waitingCount"
+          >
+            0
+          </div>
+        </div>
+
+
+        <div class="card">
+          <div class="card-label">
+            Tickets disponíveis
+          </div>
+
+          <div
+            class="card-number"
+            id="ticketsCount"
+          >
+            0
+          </div>
+        </div>
+
+      </div>
+
+
+      <!-- MATRÍCULAS -->
+
+      <section class="section">
+
+        <h3>
+          Matrículas aguardando confirmação
+        </h3>
+
+        <div id="enrollmentsArea">
+
+          <div class="loading">
+            Carregando...
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- INDICAÇÕES -->
+
+      <section class="section">
+
+        <h3>
+          Últimas indicações
+        </h3>
+
+        <div id="referralsArea">
+
+          <div class="loading">
+            Carregando...
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- TICKETS -->
+
+      <section class="section">
+
+        <h3>
+          Tickets disponíveis
+        </h3>
+
+        <div id="ticketsArea">
+
+          <div class="loading">
+            Carregando...
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- PRÊMIOS -->
+
+      <section class="section">
+
+        <h3>
+          Prêmios
+        </h3>
+
+        <div id="prizesArea">
+
+          <div class="loading">
+            Carregando...
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
+
+  </section>
+
+
 <script>
-const API='https://indica-mais-api.evoluamaisprofissoes.workers.dev';
-const $=id=>document.getElementById(id);
-const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-const fmt=v=>v?new Date(v).toLocaleString('pt-BR'):'—';
-const bd=s=>{let c=['confirmed','eligible','active','available'].includes(s)?'ok':['paid_waiting','pending'].includes(s)?'warn':['cancelled','refunded','revoked'].includes(s)?'danger':'';return '<span class="badge '+c+'">'+esc(s)+'</span>'};
-async function get(p){let r=await fetch(API+p),j=await r.json();if(!j.success)throw Error(j.error||'Erro na API');return j}
-function campaign(c){if(!c)return;let h='<div><strong>Nome</strong><span class="muted">'+esc(c.name)+'</span></div><div><strong>Título</strong><span class="muted">'+esc(c.title)+'</span></div><div><strong>Subtítulo</strong><span class="muted">'+esc(c.subtitle)+'</span></div><div><strong>Identidade</strong><span class="muted">'+esc(c.logo_text)+' · '+esc(c.primary_color)+'</span></div>';$('campaignBox').innerHTML=h;$('campaignBox2').innerHTML=h;$('campaignStatus').textContent=c.status}
-function table(box,head,rows){$(box).innerHTML=rows.length?'<table><thead><tr>'+head.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table>':'<div class="empty">Nenhum registro.</div>'}
-async function loadAll(){try{$('err').style.display='none';let d=await get('/api/admin/dashboard'),x=d.dashboard||{};['Students','Referrals','Enrollments','Waiting','Tickets','Prizes'].forEach((k,i)=>$(['nStudents','nReferrals','nEnrollments','nWaiting','nTickets','nPrizes'][i]).textContent=[x.students,x.referrals,x.enrollments,x.waiting_7_days,x.available_tickets,x.prizes][i]||0);campaign(d.campaign);
-let [r,e,s,t,p]=await Promise.all([get('/api/admin/referrals'),get('/api/admin/enrollments'),get('/api/admin/students'),get('/api/admin/tickets'),get('/api/admin/prizes')]);
-table('referralsBox',['Lead','WhatsApp','Indicador','Status','Criada','Elegível'],(r.referrals||[]).map(x=>'<tr><td>'+esc(x.lead_name)+'</td><td>'+esc(x.lead_whatsapp)+'</td><td>'+esc(x.student_name)+'</td><td>'+bd(x.status)+'</td><td>'+fmt(x.created_at)+'</td><td>'+fmt(x.eligible_at)+'</td></tr>'));
-table('enrollmentsBox',['Lead','Indicador','Status','Pago em','Elegível em'],(e.enrollments||[]).map(x=>'<tr><td>'+esc(x.lead_name)+'</td><td>'+esc(x.indicator_name)+'</td><td>'+bd(x.enrollment_status)+'</td><td>'+fmt(x.paid_at)+'</td><td>'+fmt(x.eligible_at)+'</td></tr>'));
-table('studentsBox',['Nome','WhatsApp','E-mail','Indicações','Tickets','Status'],(s.students||[]).map(x=>'<tr><td>'+esc(x.name)+'</td><td>'+esc(x.whatsapp)+'</td><td>'+esc(x.email)+'</td><td>'+x.referrals+'</td><td>'+x.tickets+'</td><td>'+(x.active?'Ativo':'Inativo')+'</td></tr>'));
-table('ticketsBox',['Código','Aluno','Status','Criado','Usado'],(t.tickets||[]).map(x=>'<tr><td><strong>'+esc(x.code)+'</strong></td><td>'+esc(x.student_name)+'</td><td>'+bd(x.status)+'</td><td>'+fmt(x.created_at)+'</td><td>'+fmt(x.used_at)+'</td></tr>'));
-table('prizesBox',['Prêmio','Descrição','Estoque','Ativo'],(p.prizes||[]).map(x=>'<tr><td>'+esc(x.icon)+' '+esc(x.name)+'</td><td>'+esc(x.description)+'</td><td>'+x.stock+'</td><td>'+(x.active?'Sim':'Não')+'</td></tr>'));
-}catch(e){$('err').textContent='Erro: '+e.message;$('err').style.display='block'}}
-document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));$('tab-'+b.dataset.tab).classList.add('active');$('title').textContent=b.textContent.replace(/[^\p{L}\p{N}\s]/gu,'').trim()});
-loadAll();
-</script></body></html>
+
+  /* =====================================================
+     CONFIGURAÇÃO
+  ===================================================== */
+
+  const API_URL =
+    "https://indica-mais-api.evoluamaisprofissoes.workers.dev";
+
+
+  /* =====================================================
+     ELEMENTOS
+  ===================================================== */
+
+  const loginScreen =
+    document.getElementById("loginScreen");
+
+  const adminScreen =
+    document.getElementById("adminScreen");
+
+  const loginForm =
+    document.getElementById("loginForm");
+
+  const loginButton =
+    document.getElementById("loginButton");
+
+  const loginError =
+    document.getElementById("loginError");
+
+  const loginSuccess =
+    document.getElementById("loginSuccess");
+
+  const logoutButton =
+    document.getElementById("logoutButton");
+
+
+  /* =====================================================
+     TOKEN
+  ===================================================== */
+
+  function getToken() {
+
+    return localStorage.getItem(
+      "indica_admin_token"
+    );
+
+  }
+
+
+  function saveToken(token) {
+
+    localStorage.setItem(
+      "indica_admin_token",
+      token
+    );
+
+  }
+
+
+  function clearToken() {
+
+    localStorage.removeItem(
+      "indica_admin_token"
+    );
+
+  }
+
+
+  /* =====================================================
+     MENSAGENS
+  ===================================================== */
+
+  function showLoginError(message) {
+
+    loginSuccess.style.display = "none";
+
+    loginError.textContent = message;
+
+    loginError.style.display = "block";
+
+  }
+
+
+  function showLoginSuccess(message) {
+
+    loginError.style.display = "none";
+
+    loginSuccess.textContent = message;
+
+    loginSuccess.style.display = "block";
+
+  }
+
+
+  /* =====================================================
+     API
+  ===================================================== */
+
+  async function api(
+    endpoint,
+    options = {}
+  ) {
+
+    const token = getToken();
+
+    const headers = {
+
+      "Content-Type":
+        "application/json",
+
+      ...(options.headers || {})
+
+    };
+
+
+    if (token) {
+
+      headers.Authorization =
+        `Bearer ${token}`;
+
+    }
+
+
+    const response =
+      await fetch(
+        API_URL + endpoint,
+        {
+          ...options,
+          headers
+        }
+      );
+
+
+    let data = {};
+
+    try {
+
+      data = await response.json();
+
+    } catch (e) {
+
+      data = {};
+
+    }
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        data.error ||
+        data.message ||
+        "Erro na comunicação com a API."
+      );
+
+    }
+
+
+    return data;
+
+  }
+
+
+  /* =====================================================
+     LOGIN
+  ===================================================== */
+
+  loginForm.addEventListener(
+    "submit",
+    async function(event) {
+
+      event.preventDefault();
+
+      loginError.style.display =
+        "none";
+
+      loginSuccess.style.display =
+        "none";
+
+
+      const email =
+        document
+          .getElementById("email")
+          .value
+          .trim();
+
+      const password =
+        document
+          .getElementById("password")
+          .value;
+
+
+      loginButton.disabled = true;
+
+      loginButton.textContent =
+        "Entrando...";
+
+
+      try {
+
+        const response =
+          await fetch(
+            API_URL + "/api/admin/login",
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+
+              body: JSON.stringify({
+                email,
+                password
+              })
+            }
+          );
+
+
+        const data =
+          await response.json();
+
+
+        if (!response.ok) {
+
+          throw new Error(
+            data.error ||
+            data.message ||
+            "E-mail ou senha inválidos."
+          );
+
+        }
+
+
+        /*
+          Aceitamos diferentes formatos
+          de resposta para facilitar
+          a compatibilidade com o Worker.
+        */
+
+        const token =
+          data.token ||
+          data.session?.token ||
+          data.data?.token;
+
+
+        if (!token) {
+
+          throw new Error(
+            "Login realizado, mas a API não retornou o token da sessão."
+          );
+
+        }
+
+
+        saveToken(token);
+
+
+        showLoginSuccess(
+          "Login realizado com sucesso!"
+        );
+
+
+        setTimeout(
+          () => {
+
+            showAdmin();
+
+          },
+          300
+        );
+
+
+      } catch (error) {
+
+        console.error(error);
+
+        showLoginError(
+          error.message ||
+          "Não foi possível realizar o login."
+        );
+
+
+      } finally {
+
+        loginButton.disabled =
+          false;
+
+        loginButton.textContent =
+          "Entrar no painel";
+
+      }
+
+    }
+  );
+
+
+  /* =====================================================
+     VERIFICAR SESSÃO
+  ===================================================== */
+
+  async function checkSession() {
+
+    const token =
+      getToken();
+
+
+    if (!token) {
+
+      showLogin();
+
+      return;
+
+    }
+
+
+    try {
+
+      const response =
+        await api(
+          "/api/admin/me"
+        );
+
+
+      if (
+        response.success === false
+      ) {
+
+        throw new Error(
+          "Sessão inválida."
+        );
+
+      }
+
+
+      showAdmin(
+        response.admin ||
+        response.user
+      );
+
+
+    } catch (error) {
+
+      console.log(
+        "Sessão inválida ou expirada."
+      );
+
+      clearToken();
+
+      showLogin();
+
+    }
+
+  }
+
+
+  /* =====================================================
+     MOSTRAR LOGIN
+  ===================================================== */
+
+  function showLogin() {
+
+    loginScreen.style.display =
+      "flex";
+
+    adminScreen.style.display =
+      "none";
+
+  }
+
+
+  /* =====================================================
+     MOSTRAR ADMIN
+  ===================================================== */
+
+  async function showAdmin(admin = null) {
+
+    loginScreen.style.display =
+      "none";
+
+    adminScreen.style.display =
+      "block";
+
+
+    if (admin) {
+
+      document.getElementById(
+        "adminName"
+      ).textContent =
+        admin.name ||
+        admin.email ||
+        "Administrador";
+
+    }
+
+
+    await loadDashboard();
+
+  }
+
+
+  /* =====================================================
+     DASHBOARD
+  ===================================================== */
+
+  async function loadDashboard() {
+
+    try {
+
+      const data =
+        await api(
+          "/api/admin/dashboard"
+        );
+
+
+      const dashboard =
+        data.dashboard ||
+        data.data ||
+        data;
+
+
+      document.getElementById(
+        "studentsCount"
+      ).textContent =
+        dashboard.students || 0;
+
+
+      document.getElementById(
+        "referralsCount"
+      ).textContent =
+        dashboard.referrals || 0;
+
+
+      document.getElementById(
+        "waitingCount"
+      ).textContent =
+        dashboard.waiting_7_days || 0;
+
+
+      document.getElementById(
+        "ticketsCount"
+      ).textContent =
+        dashboard.available_tickets || 0;
+
+
+      await Promise.all([
+        loadEnrollments(),
+        loadReferrals(),
+        loadTickets(),
+        loadPrizes()
+      ]);
+
+
+    } catch (error) {
+
+      console.error(error);
+
+      /*
+        Se o token expirou,
+        voltamos para o login.
+      */
+
+      if (
+        error.message
+          .toLowerCase()
+          .includes("autentic")
+      ) {
+
+        clearToken();
+
+        showLogin();
+
+        return;
+
+      }
+
+
+      document.getElementById(
+        "enrollmentsArea"
+      ).innerHTML =
+        `<div class="status-message">
+          Erro ao carregar o painel.
+        </div>`;
+
+    }
+
+  }
+
+
+  /* =====================================================
+     MATRÍCULAS
+  ===================================================== */
+
+  async function loadEnrollments() {
+
+    const area =
+      document.getElementById(
+        "enrollmentsArea"
+      );
+
+
+    try {
+
+      const data =
+        await api(
+          "/api/admin/enrollments"
+        );
+
+
+      const items =
+        data.enrollments ||
+        data.results ||
+        data.data ||
+        [];
+
+
+      if (!items.length) {
+
+        area.innerHTML =
+          `<div class="empty">
+            Nenhuma matrícula encontrada.
+          </div>`;
+
+        return;
+
+      }
+
+
+      let html = `
+        <div class="table-wrapper">
+        <table>
+
+          <thead>
+            <tr>
+              <th>Aluno</th>
+              <th>Status</th>
+              <th>Elegível em</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+
+          <tbody>
+      `;
+
+
+      items.forEach(
+        item => {
+
+          const status =
+            item.enrollment_status ||
+            item.status ||
+            "";
+
+
+          const eligibleAt =
+            item.eligible_at
+              ? new Date(
+                  item.eligible_at
+                ).toLocaleDateString(
+                  "pt-BR"
+                )
+              : "-";
+
+
+          const canConfirm =
+            status ===
+              "paid_waiting" ||
+            status ===
+              "eligible";
+
+
+          html += `
+            <tr>
+
+              <td>
+                ${escapeHtml(
+                  item.lead_name ||
+                  item.name ||
+                  "-"
+                )}
+              </td>
+
+              <td>
+                <span class="badge ${
+                  canConfirm
+                    ? "badge-yellow"
+                    : status === "confirmed"
+                      ? "badge-green"
+                      : "badge-red"
+                }">
+                  ${escapeHtml(status)}
+                </span>
+              </td>
+
+              <td>
+                ${eligibleAt}
+              </td>
+
+              <td>
+                ${
+                  canConfirm
+                    ? `
+                      <button
+                        class="confirm-button"
+                        onclick="confirmEnrollment('${item.id}')"
+                      >
+                        Confirmar
+                      </button>
+                    `
+                    : "-"
+                }
+              </td>
+
+            </tr>
+          `;
+
+        }
+      );
+
+
+      html += `
+          </tbody>
+        </table>
+        </div>
+      `;
+
+
+      area.innerHTML =
+        html;
+
+
+    } catch (error) {
+
+      console.error(error);
+
+      area.innerHTML =
+        `<div class="status-message">
+          Não foi possível carregar as matrículas.
+        </div>`;
+
+    }
+
+  }
+
+
+  /* =====================================================
+     CONFIRMAR MATRÍCULA
+  ===================================================== */
+
+  async function confirmEnrollment(
+    id
+  ) {
+
+    if (
+      !confirm(
+        "Confirmar esta matrícula e gerar o ticket?"
+      )
+    ) {
+
+      return;
+
+    }
+
+
+    try {
+
+      const data =
+        await api(
+          `/api/admin/enrollments/${id}/confirm`,
+          {
+            method: "POST"
+          }
+        );
+
+
+      alert(
+        data.message ||
+        "Matrícula confirmada e ticket gerado."
+      );
+
+
+      await loadDashboard();
+
+
+    } catch (error) {
+
+      alert(
+        error.message ||
+        "Não foi possível confirmar a matrícula."
+      );
+
+    }
+
+  }
+
+
+  /* =====================================================
+     INDICAÇÕES
+  ===================================================== */
+
+  async function loadReferrals() {
+
+    const area =
+      document.getElementById(
+        "referralsArea"
+      );
+
+
+    try {
+
+      const data =
+        await api(
+          "/api/admin/referrals"
+        );
+
+
+      const items =
+        data.referrals ||
+        data.results ||
+        data.data ||
+        [];
+
+
+      if (!items.length) {
+
+        area.innerHTML =
+          `<div class="empty">
+            Nenhuma indicação encontrada.
+          </div>`;
+
+        return;
+
+      }
+
+
+      let html = `
+        <div class="table-wrapper">
+        <table>
+
+          <thead>
+            <tr>
+              <th>Lead</th>
+              <th>WhatsApp</th>
+              <th>Status</th>
+              <th>Data</th>
+            </tr>
+          </thead>
+
+          <tbody>
+      `;
+
+
+      items.slice(0, 30).forEach(
+        item => {
+
+          html += `
+            <tr>
+
+              <td>
+                ${escapeHtml(
+                  item.lead_name ||
+                  "-"
+                )}
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  item.lead_whatsapp ||
+                  "-"
+                )}
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  item.status ||
+                  "-"
+                )}
+              </td>
+
+              <td>
+                ${
+                  item.created_at
+                    ? new Date(
+                        item.created_at
+                      ).toLocaleDateString(
+                        "pt-BR"
+                      )
+                    : "-"
+                }
+              </td>
+
+            </tr>
+          `;
+
+        }
+      );
+
+
+      html += `
+          </tbody>
+        </table>
+        </div>
+      `;
+
+
+      area.innerHTML =
+        html;
+
+
+    } catch (error) {
+
+      console.error(error);
+
+      area.innerHTML =
+        `<div class="status-message">
+          Não foi possível carregar as indicações.
+        </div>`;
+
+    }
+
+  }
+
+
+  /* =====================================================
+     TICKETS
+  ===================================================== */
+
+  async function loadTickets() {
+
+    const area =
+      document.getElementById(
+        "ticketsArea"
+      );
+
+
+    try {
+
+      const data =
+        await api(
+          "/api/admin/tickets"
+        );
+
+
+      const items =
+        data.tickets ||
+        data.results ||
+        data.data ||
+        [];
+
+
+      if (!items.length) {
+
+        area.innerHTML =
+          `<div class="empty">
+            Nenhum ticket disponível.
+          </div>`;
+
+        return;
+
+      }
+
+
+      let html = `
+        <div class="table-wrapper">
+        <table>
+
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Status</th>
+              <th>Data</th>
+            </tr>
+          </thead>
+
+          <tbody>
+      `;
+
+
+      items.slice(0, 50).forEach(
+        item => {
+
+          html += `
+            <tr>
+
+              <td>
+                <strong>
+                  ${escapeHtml(
+                    item.code ||
+                    "-"
+                  )}
+                </strong>
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  item.status ||
+                  "-"
+                )}
+              </td>
+
+              <td>
+                ${
+                  item.created_at
+                    ? new Date(
+                        item.created_at
+                      ).toLocaleDateString(
+                        "pt-BR"
+                      )
+                    : "-"
+                }
+              </td>
+
+            </tr>
+          `;
+
+        }
+      );
+
+
+      html += `
+          </tbody>
+        </table>
+        </div>
+      `;
+
+
+      area.innerHTML =
+        html;
+
+
+    } catch (error) {
+
+      console.error(error);
+
+      area.innerHTML =
+        `<div class="status-message">
+          Não foi possível carregar os tickets.
+        </div>`;
+
+    }
+
+  }
+
+
+  /* =====================================================
+     PRÊMIOS
+  ===================================================== */
+
+  async function loadPrizes() {
+
+    const area =
+      document.getElementById(
+        "prizesArea"
+      );
+
+
+    try {
+
+      const data =
+        await api(
+          "/api/admin/prizes"
+        );
+
+
+      const items =
+        data.prizes ||
+        data.results ||
+        data.data ||
+        [];
+
+
+      if (!items.length) {
+
+        area.innerHTML =
+          `<div class="empty">
+            Nenhum prêmio cadastrado.
+          </div>`;
+
+        return;
+
+      }
+
+
+      let html = `
+        <div class="table-wrapper">
+        <table>
+
+          <thead>
+            <tr>
+              <th>Prêmio</th>
+              <th>Estoque</th>
+              <th>Ativo</th>
+            </tr>
+          </thead>
+
+          <tbody>
+      `;
+
+
+      items.forEach(
+        item => {
+
+          html += `
+            <tr>
+
+              <td>
+                ${escapeHtml(
+                  item.name ||
+                  "-"
+                )}
+              </td>
+
+              <td>
+                ${item.stock ?? 0}
+              </td>
+
+              <td>
+                ${
+                  item.active
+                    ? `<span class="badge badge-green">Ativo</span>`
+                    : `<span class="badge badge-red">Inativo</span>`
+                }
+              </td>
+
+            </tr>
+          `;
+
+        }
+      );
+
+
+      html += `
+          </tbody>
+        </table>
+        </div>
+      `;
+
+
+      area.innerHTML =
+        html;
+
+
+    } catch (error) {
+
+      console.error(error);
+
+      area.innerHTML =
+        `<div class="status-message">
+          Não foi possível carregar os prêmios.
+        </div>`;
+
+    }
+
+  }
+
+
+  /* =====================================================
+     LOGOUT
+  ===================================================== */
+
+  logoutButton.addEventListener(
+    "click",
+    async function() {
+
+      try {
+
+        await api(
+          "/api/admin/logout",
+          {
+            method: "POST"
+          }
+        );
+
+      } catch (error) {
+
+        console.log(
+          "Sessão já encerrada."
+        );
+
+      }
+
+
+      clearToken();
+
+      showLogin();
+
+      document.getElementById(
+        "password"
+      ).value = "";
+
+    }
+  );
+
+
+  /* =====================================================
+     SEGURANÇA DE TEXTO
+  ===================================================== */
+
+  function escapeHtml(
+    value
+  ) {
+
+    return String(
+      value ?? ""
+    )
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+
+  }
+
+
+  /* =====================================================
+     INICIALIZAÇÃO
+  ===================================================== */
+
+  checkSession();
+
+</script>
+
+</body>
+</html>
