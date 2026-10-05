@@ -1,16 +1,46 @@
 <!doctype html>
-<html lang="pt-BR">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#111827"><link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/admin.css"><title>Admin | Indica+</title></head>
-<body class="admin-body">
-<aside class="sidebar"><a class="brand" href="../index.html"><span class="brand-mark">+</span>Indica<span>+</span></a><nav><button class="nav-item active" data-view="dashboard">▦ <span>Dashboard</span></button><button class="nav-item" data-view="indications">👥 <span>Indicações</span></button><button class="nav-item" data-view="tickets">🎟️ <span>Tickets</span></button><button class="nav-item" data-view="prizes">🎁 <span>Prêmios</span></button><button class="nav-item" data-view="campaign">🎨 <span>Campanha</span></button><button class="nav-item" data-view="reports">📊 <span>Relatórios</span></button></nav><a class="side-link" href="../index.html">← Ver site</a></aside>
-<main class="admin-main"><header class="admin-top"><div><span class="eyebrow">PAINEL ADMINISTRATIVO</span><h1 id="viewTitle">Dashboard</h1></div><span class="admin-status">● Sistema online</span></header>
-<section id="view-dashboard" class="admin-view active"></section>
-<section id="view-indications" class="admin-view"></section>
-<section id="view-tickets" class="admin-view"></section>
-<section id="view-prizes" class="admin-view"></section>
-<section id="view-campaign" class="admin-view"></section>
-<section id="view-reports" class="admin-view"></section>
-</main>
-<div class="modal" id="adminModal"><div class="modal-box wide"><button class="modal-close" data-close>×</button><div id="adminModalContent"></div></div></div>
-<script src="../js/config.js"></script><script src="../js/admin.js"></script>
-</body></html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Indica+ | Administração</title>
+<style>
+:root{--p:#6d28d9;--bg:#f5f3ff;--card:#fff;--text:#241b35;--muted:#756b86;--line:#e7e0f0}
+*{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
+.app{display:flex;min-height:100vh}.side{position:fixed;inset:0 auto 0 0;width:230px;background:#24133f;color:#fff;padding:22px 15px}.brand{font-size:26px;font-weight:800;padding:8px 10px 28px}.brand span{color:#bda0ff}.nav{display:grid;gap:7px}.nav button{border:0;background:transparent;color:#ddd1f3;padding:12px;border-radius:9px;text-align:left;cursor:pointer}.nav button.active,.nav button:hover{background:#5b25a9;color:#fff}
+.main{margin-left:230px;width:calc(100% - 230px);padding:28px;max-width:1500px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.top h1{margin:0;font-size:27px}.top p{margin:5px 0;color:var(--muted)}.refresh{border:0;background:var(--p);color:#fff;padding:11px 16px;border-radius:8px;font-weight:700;cursor:pointer}
+.cards{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:22px}.card,.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 4px 18px #3b236510}.card{padding:18px}.num{font-size:29px;font-weight:800;color:var(--p)}.label{font-size:12px;color:var(--muted);margin-top:4px}.panel{overflow:hidden;margin-bottom:20px}.panel h2{font-size:17px;margin:0}.panel-head{padding:17px 19px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between}.tab{display:none}.tab.active{display:block}.campaign{padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:14px}.campaign strong{display:block;margin-bottom:4px}.muted{font-size:13px;color:var(--muted)}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:12px 15px;border-bottom:1px solid var(--line)}th{background:#faf8ff;font-size:11px;color:#685d78;text-transform:uppercase}tr:hover td{background:#fcfaff}.wrap{overflow:auto}.empty,.loading{text-align:center;padding:38px;color:var(--muted)}.badge{display:inline-block;padding:5px 9px;border-radius:999px;background:#eee8ff;color:#5b25a9;font-size:11px;font-weight:700}.ok{background:#e7f7ee;color:#16834a}.warn{background:#fff3dd;color:#a96600}.danger{background:#fde8e8;color:#b52f2f}.error{display:none;background:#fff0f0;color:#a52d2d;padding:13px;border-radius:9px;margin-bottom:18px}
+@media(max-width:1100px){.cards{grid-template-columns:repeat(3,1fr)}}@media(max-width:700px){.side{display:none}.main{margin:0;width:100%;padding:16px}.cards{grid-template-columns:repeat(2,1fr)}.campaign{grid-template-columns:1fr}.top h1{font-size:22px}}
+</style></head><body>
+<div class="app"><aside class="side"><div class="brand">Indica<span>+</span></div><div class="nav">
+<button class="active" data-tab="dashboard">📊 Dashboard</button><button data-tab="referrals">📝 Indicações</button><button data-tab="enrollments">⏳ Matrículas</button><button data-tab="students">👨‍🎓 Alunos</button><button data-tab="tickets">🎟️ Tickets</button><button data-tab="prizes">🎁 Prêmios</button><button data-tab="campaign">🎨 Campanha</button>
+</div></aside>
+<main class="main"><div class="top"><div><h1 id="title">Dashboard</h1><p>Central de controle da campanha Indica+</p></div><button class="refresh" onclick="loadAll()">↻ Atualizar</button></div>
+<div id="err" class="error"></div>
+<section id="tab-dashboard" class="tab active"><div class="cards">
+<div class="card"><div class="num" id="nStudents">0</div><div class="label">Alunos</div></div><div class="card"><div class="num" id="nReferrals">0</div><div class="label">Indicações</div></div><div class="card"><div class="num" id="nEnrollments">0</div><div class="label">Matrículas</div></div><div class="card"><div class="num" id="nWaiting">0</div><div class="label">Aguardando 7 dias</div></div><div class="card"><div class="num" id="nTickets">0</div><div class="label">Tickets disponíveis</div></div><div class="card"><div class="num" id="nPrizes">0</div><div class="label">Prêmios ativos</div></div></div>
+<div class="panel"><div class="panel-head"><h2>Campanha atual</h2><span id="campaignStatus" class="badge">—</span></div><div id="campaignBox" class="campaign"><div class="loading">Carregando...</div></div></div></section>
+<section id="tab-referrals" class="tab"><div class="panel"><div class="panel-head"><h2>Indicações</h2></div><div id="referralsBox" class="wrap"></div></div></section>
+<section id="tab-enrollments" class="tab"><div class="panel"><div class="panel-head"><h2>Matrículas</h2></div><div id="enrollmentsBox" class="wrap"></div></div></section>
+<section id="tab-students" class="tab"><div class="panel"><div class="panel-head"><h2>Alunos</h2></div><div id="studentsBox" class="wrap"></div></div></section>
+<section id="tab-tickets" class="tab"><div class="panel"><div class="panel-head"><h2>Tickets</h2></div><div id="ticketsBox" class="wrap"></div></div></section>
+<section id="tab-prizes" class="tab"><div class="panel"><div class="panel-head"><h2>Prêmios</h2></div><div id="prizesBox" class="wrap"></div></div></section>
+<section id="tab-campaign" class="tab"><div class="panel"><div class="panel-head"><h2>Campanha</h2></div><div id="campaignBox2" class="campaign"></div></div></section>
+</main></div>
+<script>
+const API='https://indica-mais-api.evoluamaisprofissoes.workers.dev';
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const fmt=v=>v?new Date(v).toLocaleString('pt-BR'):'—';
+const bd=s=>{let c=['confirmed','eligible','active','available'].includes(s)?'ok':['paid_waiting','pending'].includes(s)?'warn':['cancelled','refunded','revoked'].includes(s)?'danger':'';return '<span class="badge '+c+'">'+esc(s)+'</span>'};
+async function get(p){let r=await fetch(API+p),j=await r.json();if(!j.success)throw Error(j.error||'Erro na API');return j}
+function campaign(c){if(!c)return;let h='<div><strong>Nome</strong><span class="muted">'+esc(c.name)+'</span></div><div><strong>Título</strong><span class="muted">'+esc(c.title)+'</span></div><div><strong>Subtítulo</strong><span class="muted">'+esc(c.subtitle)+'</span></div><div><strong>Identidade</strong><span class="muted">'+esc(c.logo_text)+' · '+esc(c.primary_color)+'</span></div>';$('campaignBox').innerHTML=h;$('campaignBox2').innerHTML=h;$('campaignStatus').textContent=c.status}
+function table(box,head,rows){$(box).innerHTML=rows.length?'<table><thead><tr>'+head.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table>':'<div class="empty">Nenhum registro.</div>'}
+async function loadAll(){try{$('err').style.display='none';let d=await get('/api/admin/dashboard'),x=d.dashboard||{};['Students','Referrals','Enrollments','Waiting','Tickets','Prizes'].forEach((k,i)=>$(['nStudents','nReferrals','nEnrollments','nWaiting','nTickets','nPrizes'][i]).textContent=[x.students,x.referrals,x.enrollments,x.waiting_7_days,x.available_tickets,x.prizes][i]||0);campaign(d.campaign);
+let [r,e,s,t,p]=await Promise.all([get('/api/admin/referrals'),get('/api/admin/enrollments'),get('/api/admin/students'),get('/api/admin/tickets'),get('/api/admin/prizes')]);
+table('referralsBox',['Lead','WhatsApp','Indicador','Status','Criada','Elegível'],(r.referrals||[]).map(x=>'<tr><td>'+esc(x.lead_name)+'</td><td>'+esc(x.lead_whatsapp)+'</td><td>'+esc(x.student_name)+'</td><td>'+bd(x.status)+'</td><td>'+fmt(x.created_at)+'</td><td>'+fmt(x.eligible_at)+'</td></tr>'));
+table('enrollmentsBox',['Lead','Indicador','Status','Pago em','Elegível em'],(e.enrollments||[]).map(x=>'<tr><td>'+esc(x.lead_name)+'</td><td>'+esc(x.indicator_name)+'</td><td>'+bd(x.enrollment_status)+'</td><td>'+fmt(x.paid_at)+'</td><td>'+fmt(x.eligible_at)+'</td></tr>'));
+table('studentsBox',['Nome','WhatsApp','E-mail','Indicações','Tickets','Status'],(s.students||[]).map(x=>'<tr><td>'+esc(x.name)+'</td><td>'+esc(x.whatsapp)+'</td><td>'+esc(x.email)+'</td><td>'+x.referrals+'</td><td>'+x.tickets+'</td><td>'+(x.active?'Ativo':'Inativo')+'</td></tr>'));
+table('ticketsBox',['Código','Aluno','Status','Criado','Usado'],(t.tickets||[]).map(x=>'<tr><td><strong>'+esc(x.code)+'</strong></td><td>'+esc(x.student_name)+'</td><td>'+bd(x.status)+'</td><td>'+fmt(x.created_at)+'</td><td>'+fmt(x.used_at)+'</td></tr>'));
+table('prizesBox',['Prêmio','Descrição','Estoque','Ativo'],(p.prizes||[]).map(x=>'<tr><td>'+esc(x.icon)+' '+esc(x.name)+'</td><td>'+esc(x.description)+'</td><td>'+x.stock+'</td><td>'+(x.active?'Sim':'Não')+'</td></tr>'));
+}catch(e){$('err').textContent='Erro: '+e.message;$('err').style.display='block'}}
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));$('tab-'+b.dataset.tab).classList.add('active');$('title').textContent=b.textContent.replace(/[^\p{L}\p{N}\s]/gu,'').trim()});
+loadAll();
+</script></body></html>
