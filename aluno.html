@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#6d28d9"><link rel="stylesheet" href="css/style.css"><title>Minha área | Indica+</title></head>
+<body class="app-body">
+<header class="topbar"><a class="brand" href="index.html"><span class="brand-mark">+</span>Indica<span>+</span></a><div class="user-menu"><span id="studentName">Aluno</span><button class="btn btn-sm btn-light" id="logoutBtn">Sair</button></div></header>
+<main class="dashboard">
+  <div class="dash-head"><div><span class="eyebrow">MINHA ÁREA</span><h1>Olá, <span id="helloName">Aluno</span> 👋</h1><p>Acompanhe suas indicações e tickets.</p></div><button class="btn btn-primary" id="openReferral">+ Nova indicação</button></div>
+  <div class="metric-grid">
+    <div class="metric"><span>👥</span><small>Indicações</small><strong id="mIndications">0</strong></div>
+    <div class="metric"><span>🎓</span><small>Confirmadas</small><strong id="mConfirmed">0</strong></div>
+    <div class="metric highlight"><span>🎟️</span><small>Tickets disponíveis</small><strong id="mTickets">0</strong></div>
+    <div class="metric"><span>🏆</span><small>Prêmios ganhos</small><strong id="mWins">0</strong></div>
+  </div>
+  <div class="dash-grid">
+    <section class="panel"><div class="panel-head"><h2>Meus tickets</h2><span class="pill" id="ticketCount">0 disponíveis</span></div><div id="ticketList" class="ticket-list"></div></section>
+    <section class="panel"><div class="panel-head"><h2>Minhas indicações</h2></div><div id="referralList" class="referral-list"></div></section>
+  </div>
+  <section class="panel draw-panel"><div class="panel-head"><div><h2>🎰 Participar do sorteio</h2><p>Digite um ticket disponível para iniciar sua tentativa.</p></div></div>
+    <form id="drawForm" class="draw-form"><input id="ticketInput" placeholder="Ex.: IND-7K9X-42MP" autocomplete="off"><button class="btn btn-primary">Participar agora</button></form>
+    <div id="drawResult" class="draw-result"></div>
+  </section>
+</main>
+<div class="modal" id="referralModal"><div class="modal-box"><button class="modal-close" data-close>×</button><span class="eyebrow">NOVA INDICAÇÃO</span><h2>Quem você quer indicar?</h2><form id="referralForm"><label>Nome completo<input id="refName" required></label><label>WhatsApp<input id="refPhone" inputmode="tel" required></label><label>E-mail <small>(opcional)</small><input id="refEmail" type="email"></label><button class="btn btn-primary">Registrar indicação</button></form></div></div>
+<script src="js/config.js"></script><script src="js/app.js"></script>
+</body></html>

@@ -1,0 +1,9 @@
+{
+  "name": "Indica+",
+  "short_name": "Indica+",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#faf9fd",
+  "theme_color": "#6d28d9",
+  "description": "Plataforma de campanhas de indicação e sorteios."
+}
