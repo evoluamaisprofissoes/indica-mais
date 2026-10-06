@@ -629,40 +629,280 @@ async function initStudent() {
   ------------------------------------------
   SORTEIO
   ------------------------------------------
-  */
+ /*
+------------------------------------------
+SORTEIO
+------------------------------------------
+*/
 
-  const drawForm =
-    document.getElementById(
-      "drawForm"
-    );
+const drawForm =
+  document.getElementById(
+    "drawForm"
+  );
 
-  if (drawForm) {
+if (drawForm) {
 
-    drawForm.onsubmit =
-      event => {
+  drawForm.onsubmit =
+    async event => {
 
-        event.preventDefault();
+      event.preventDefault();
 
-        const result =
-          document.getElementById(
-            "drawResult"
-          );
+
+      const ticketInput =
+        document.getElementById(
+          "ticketInput"
+        );
+
+      const result =
+        document.getElementById(
+          "drawResult"
+        );
+
+
+      const ticketCode =
+        ticketInput?.value
+          ?.trim()
+          .toUpperCase() || "";
+
+
+      /*
+      ----------------------------------------
+      VALIDA TICKET
+      ----------------------------------------
+      */
+
+      if (!ticketCode) {
+
+        if (result) {
+
+          result.innerHTML = `
+            <div class="win-card">
+              <div class="big">🎟️</div>
+              <b>Informe seu ticket</b>
+              <p>
+                Digite o código de um ticket disponível.
+              </p>
+            </div>
+          `;
+        }
+
+        return;
+      }
+
+
+      /*
+      ----------------------------------------
+      BOTÃO
+      ----------------------------------------
+      */
+
+      const submitButton =
+        drawForm.querySelector(
+          "button[type='submit']"
+        ) ||
+        drawForm.querySelector(
+          "button"
+        );
+
+
+      const originalText =
+        submitButton?.textContent;
+
+
+      try {
+
+        if (submitButton) {
+
+          submitButton.disabled =
+            true;
+
+          submitButton.textContent =
+            "Sorteando...";
+        }
+
 
         if (result) {
 
           result.innerHTML = `
             <div class="win-card">
               <div class="big">🎰</div>
-              <b>Sorteio em preparação</b>
+              <b>Realizando o sorteio...</b>
               <p>
-                O sorteio será realizado
-                pelo sistema oficial da campanha.
+                Aguarde um instante.
               </p>
             </div>
           `;
         }
-      };
-  }
+
+
+        /*
+        --------------------------------------
+        CHAMA O WORKER
+        --------------------------------------
+        */
+
+        const response =
+          await apiFetch(
+            "/api/student/draw",
+            {
+              method: "POST",
+
+              body: JSON.stringify({
+                ticket_code:
+                  ticketCode
+              })
+            }
+          );
+
+
+        /*
+        --------------------------------------
+        RESULTADO
+        --------------------------------------
+        */
+
+        const draw =
+          response.draw || {};
+
+        const prize =
+          draw.prize || {};
+
+
+        if (result) {
+
+          result.innerHTML = `
+            <div class="win-card">
+
+              <div class="big">
+                ${escapeHtml(
+                  prize.icon || "🏆"
+                )}
+              </div>
+
+              <b>
+                🎉 PARABÉNS! VOCÊ GANHOU!
+              </b>
+
+              <p>
+                ${escapeHtml(
+                  prize.name ||
+                  "Prêmio da campanha"
+                )}
+              </p>
+
+              ${
+                prize.description
+                  ? `
+                    <small>
+                      ${escapeHtml(
+                        prize.description
+                      )}
+                    </small>
+                  `
+                  : ""
+              }
+
+              <div style="margin-top:12px">
+                <strong>
+                  Ticket utilizado:
+                </strong>
+                <code>
+                  ${escapeHtml(
+                    draw.ticket_code ||
+                    ticketCode
+                  )}
+                </code>
+              </div>
+
+            </div>
+          `;
+        }
+
+
+        /*
+        --------------------------------------
+        LIMPA CAMPO
+        --------------------------------------
+        */
+
+        if (ticketInput) {
+          ticketInput.value = "";
+        }
+
+
+        /*
+        --------------------------------------
+        ATUALIZA TICKETS E PRÊMIOS
+        --------------------------------------
+        */
+
+        await renderStudent();
+
+
+      } catch (error) {
+
+        console.error(
+          "Erro no sorteio:",
+          error
+        );
+
+
+        if (result) {
+
+          result.innerHTML = `
+            <div class="win-card">
+
+              <div class="big">⚠️</div>
+
+              <b>
+                Não foi possível realizar o sorteio
+              </b>
+
+              <p>
+                ${escapeHtml(
+                  error.message ||
+                  "Tente novamente."
+                )}
+              </p>
+
+            </div>
+          `;
+        }
+
+
+        /*
+        --------------------------------------
+        SESSÃO EXPIRADA
+        --------------------------------------
+        */
+
+        if (
+          error.status === 401
+        ) {
+
+          clearStudentSession();
+
+          location.href =
+            "index.html#acessar";
+
+          return;
+        }
+
+
+      } finally {
+
+        if (submitButton) {
+
+          submitButton.disabled =
+            false;
+
+          submitButton.textContent =
+            originalText ||
+            "Participar agora";
+        }
+      }
+    };
+}
 
 
   /*
