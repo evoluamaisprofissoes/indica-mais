@@ -40,28 +40,6 @@ function error(
   );
 }
 
-function csvEscape(value) {
-  const text = String(value ?? "");
-  return `"${text.replaceAll('"', '""')}"`;
-}
-
-function csvResponse(rows, columns) {
-  const lines = [
-    columns.map(c => csvEscape(c.label)).join(";")
-  ];
-  for (const row of rows) {
-    lines.push(columns.map(c => csvEscape(row[c.key])).join(";"));
-  }
-  return new Response("\uFEFF" + lines.join("\n"), {
-    status: 200,
-    headers: {
-      ...CORS,
-      "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="indica-mais-${Date.now()}.csv"`
-    }
-  });
-}
-
 
 /*
 ==================================================
@@ -139,6 +117,28 @@ function normalizePhone(value) {
     /\D/g,
     ""
   );
+}
+
+
+/*
+==================================================
+ARQUIVOS / R2
+==================================================
+*/
+
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp"
+]);
+
+function extensionForImageType(type) {
+  return {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/webp": "webp"
+  }[type] || "bin";
 }
 
 
@@ -490,6 +490,42 @@ export default {
 
 
     try {
+
+
+      /*
+      ==========================================
+      ARQUIVOS PUBLICOS / R2
+      ==========================================
+      */
+
+      if (
+        request.method === "GET" &&
+        url.pathname.startsWith("/media/")
+      ) {
+        if (!env.IMAGES) {
+          return error("Armazenamento de imagens não configurado.", 503);
+        }
+
+        const key = decodeURIComponent(
+          url.pathname.substring("/media/".length)
+        );
+
+        if (!key || key.includes("..")) {
+          return error("Arquivo inválido.", 400);
+        }
+
+        const object = await env.IMAGES.get(key);
+        if (!object) {
+          return error("Imagem não encontrada.", 404);
+        }
+
+        const headers = new Headers(CORS);
+        headers.set("Content-Type", object.httpMetadata?.contentType || "application/octet-stream");
+        headers.set("Cache-Control", "public, max-age=31536000, immutable");
+        if (object.httpEtag) headers.set("ETag", object.httpEtag);
+
+        return new Response(object.body, { headers });
+      }
 
 
       /*
@@ -1663,313 +1699,68 @@ export default {
 
       /*
       ==========================================
-      ADMIN - CAMPANHAS / CONFIGURAÇÃO
+      ADMIN - UPLOAD DE IMAGEM
       ==========================================
       */
-
-      if (
-        request.method === "GET" &&
-        url.pathname === "/api/admin/campaigns"
-      ) {
-        const result = await env.DB.prepare(`
-          SELECT * FROM campaigns
-          ORDER BY CASE status
-            WHEN 'active' THEN 0
-            WHEN 'draft' THEN 1
-            WHEN 'paused' THEN 2
-            WHEN 'finished' THEN 3
-            WHEN 'archived' THEN 4
-            ELSE 5 END,
-            created_at DESC
-        `).all();
-        return json({ success:true, campaigns: result.results || [] });
-      }
 
       if (
         request.method === "POST" &&
-        url.pathname === "/api/admin/campaigns"
+        url.pathname === "/api/admin/upload-image"
       ) {
-        const body = await request.json();
-        const name = String(body.name || "").trim();
-        const title = String(body.title || "").trim();
-        if (!name || !title) return error("Nome e título da campanha são obrigatórios.", 422);
-        const status = ["draft","active","paused","finished","archived"].includes(body.status) ? body.status : "draft";
-        const id = crypto.randomUUID();
-        const now = new Date().toISOString();
-        if (status === "active") {
-          await env.DB.prepare(`UPDATE campaigns SET status='archived', updated_at=? WHERE status='active'`).bind(now).run();
+        if (!env.IMAGES) {
+          return error("Armazenamento de imagens não configurado. Crie um bucket R2 e faça o binding IMAGES no Worker.", 503);
         }
-        await env.DB.prepare(`
-          INSERT INTO campaigns (
-            id,name,badge,title,subtitle,logo_text,primary_color,secondary_color,
-            banner_url,logo_url,background_url,starts_at,ends_at,status,created_at,updated_at
-          ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-        `).bind(
-          id,name,String(body.badge||"CAMPANHA ATIVA"),title,String(body.subtitle||""),String(body.logo_text||"Indica+"),
-          String(body.primary_color||"#6d28d9"),String(body.secondary_color||"#8b5cf6"),String(body.banner_url||""),
-          String(body.logo_url||""),String(body.background_url||""),body.starts_at||null,body.ends_at||null,status,now,now
-        ).run();
-        await audit(env,admin,"campaign_created","campaign",id,{name,status});
-        return json({success:true,campaign:await env.DB.prepare(`SELECT * FROM campaigns WHERE id=?`).bind(id).first()},201);
-      }
 
-      const campaignMatch = url.pathname.match(/^\/api\/admin\/campaigns\/([^/]+)$/);
-      if (campaignMatch && request.method === "PATCH") {
-        const id = campaignMatch[1];
-        const current = await env.DB.prepare(`SELECT * FROM campaigns WHERE id=?`).bind(id).first();
-        if (!current) return error("Campanha não encontrada.",404);
-        const body = await request.json();
-        const allowedStatus = ["draft","active","paused","finished","archived"];
-        const next = {
-          name: body.name !== undefined ? String(body.name).trim() : current.name,
-          badge: body.badge !== undefined ? String(body.badge) : current.badge,
-          title: body.title !== undefined ? String(body.title).trim() : current.title,
-          subtitle: body.subtitle !== undefined ? String(body.subtitle) : current.subtitle,
-          logo_text: body.logo_text !== undefined ? String(body.logo_text) : current.logo_text,
-          primary_color: body.primary_color !== undefined ? String(body.primary_color) : current.primary_color,
-          secondary_color: body.secondary_color !== undefined ? String(body.secondary_color) : current.secondary_color,
-          banner_url: body.banner_url !== undefined ? String(body.banner_url) : current.banner_url,
-          logo_url: body.logo_url !== undefined ? String(body.logo_url) : current.logo_url,
-          background_url: body.background_url !== undefined ? String(body.background_url) : current.background_url,
-          starts_at: body.starts_at !== undefined ? (body.starts_at || null) : current.starts_at,
-          ends_at: body.ends_at !== undefined ? (body.ends_at || null) : current.ends_at,
-          status: allowedStatus.includes(body.status) ? body.status : current.status
-        };
-        if (!next.name || !next.title) return error("Nome e título da campanha são obrigatórios.",422);
-        const now = new Date().toISOString();
-        if (next.status === "active") {
-          await env.DB.prepare(`UPDATE campaigns SET status='archived', updated_at=? WHERE status='active' AND id<>?`).bind(now,id).run();
+        const contentType = request.headers.get("Content-Type") || "";
+        if (!contentType.toLowerCase().startsWith("multipart/form-data")) {
+          return error("Envie a imagem como multipart/form-data.", 415);
         }
-        await env.DB.prepare(`
-          UPDATE campaigns SET name=?,badge=?,title=?,subtitle=?,logo_text=?,primary_color=?,secondary_color=?,
-          banner_url=?,logo_url=?,background_url=?,starts_at=?,ends_at=?,status=?,updated_at=? WHERE id=?
-        `).bind(next.name,next.badge,next.title,next.subtitle,next.logo_text,next.primary_color,next.secondary_color,next.banner_url,next.logo_url,next.background_url,next.starts_at,next.ends_at,next.status,now,id).run();
-        await audit(env,admin,"campaign_updated","campaign",id,{before:current,after:next});
-        return json({success:true,campaign:await env.DB.prepare(`SELECT * FROM campaigns WHERE id=?`).bind(id).first()});
-      }
 
-      if (campaignMatch && request.method === "DELETE") {
-        const id = campaignMatch[1];
-        const c = await env.DB.prepare(`SELECT * FROM campaigns WHERE id=?`).bind(id).first();
-        if (!c) return error("Campanha não encontrada.",404);
-        const counts = await env.DB.batch([
-          env.DB.prepare(`SELECT COUNT(*) total FROM referrals WHERE campaign_id=?`).bind(id),
-          env.DB.prepare(`SELECT COUNT(*) total FROM enrollments WHERE campaign_id=?`).bind(id),
-          env.DB.prepare(`SELECT COUNT(*) total FROM prizes WHERE campaign_id=?`).bind(id),
-          env.DB.prepare(`SELECT COUNT(*) total FROM tickets WHERE campaign_id=?`).bind(id),
-          env.DB.prepare(`SELECT COUNT(*) total FROM draws WHERE campaign_id=?`).bind(id)
-        ]);
-        const used = counts.some(x => Number(x.results?.[0]?.total || 0) > 0);
-        if (used) return error("Esta campanha já possui histórico e não pode ser excluída. Arquive-a em vez disso.",409);
-        await env.DB.prepare(`DELETE FROM campaigns WHERE id=?`).bind(id).run();
-        await audit(env,admin,"campaign_deleted","campaign",id,{name:c.name});
-        return json({success:true});
-      }
+        const form = await request.formData();
+        const file = form.get("file");
 
-      /*
-      ==========================================
-      ADMIN - PRÊMIOS CRUD
-      ==========================================
-      */
-
-      if (request.method === "POST" && url.pathname === "/api/admin/prizes") {
-        const body = await request.json();
-        const name = String(body.name || "").trim();
-        const campaignId = String(body.campaign_id || "").trim();
-        if (!name) return error("Informe o nome do prêmio.",422);
-        const campaign = campaignId
-          ? await env.DB.prepare(`SELECT id FROM campaigns WHERE id=?`).bind(campaignId).first()
-          : await env.DB.prepare(`SELECT id FROM campaigns WHERE status='active' ORDER BY created_at DESC LIMIT 1`).first();
-        if (!campaign) return error("Nenhuma campanha encontrada.",404);
-        const id = crypto.randomUUID(), now = new Date().toISOString();
-        await env.DB.prepare(`INSERT INTO prizes (id,campaign_id,name,description,icon,image_url,stock,active,display_order,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)`)
-          .bind(id,campaign.id,name,String(body.description||""),String(body.icon||"🎁"),String(body.image_url||""),Math.max(0,Number(body.stock??1)),body.active===false||Number(body.active)===0?0:1,Math.max(0,Number(body.display_order??0)),now,now).run();
-        await audit(env,admin,"prize_created","prize",id,{name,campaign_id:campaign.id});
-        return json({success:true,prize:await env.DB.prepare(`SELECT * FROM prizes WHERE id=?`).bind(id).first()},201);
-      }
-
-      const prizeMatch = url.pathname.match(/^\/api\/admin\/prizes\/([^/]+)$/);
-      if (prizeMatch && request.method === "PATCH") {
-        const id = prizeMatch[1];
-        const current = await env.DB.prepare(`SELECT * FROM prizes WHERE id=?`).bind(id).first();
-        if (!current) return error("Prêmio não encontrado.",404);
-        const body = await request.json();
-        const now = new Date().toISOString();
-        const next = {
-          name: body.name !== undefined ? String(body.name).trim() : current.name,
-          description: body.description !== undefined ? String(body.description) : current.description,
-          icon: body.icon !== undefined ? String(body.icon) : current.icon,
-          image_url: body.image_url !== undefined ? String(body.image_url) : current.image_url,
-          stock: body.stock !== undefined ? Math.max(0,Number(body.stock)) : current.stock,
-          active: body.active !== undefined ? (Number(body.active)?1:0) : current.active,
-          display_order: body.display_order !== undefined ? Math.max(0,Number(body.display_order)) : current.display_order
-        };
-        if (!next.name) return error("Informe o nome do prêmio.",422);
-        await env.DB.prepare(`UPDATE prizes SET name=?,description=?,icon=?,image_url=?,stock=?,active=?,display_order=?,updated_at=? WHERE id=?`)
-          .bind(next.name,next.description,next.icon,next.image_url,next.stock,next.active,next.display_order,now,id).run();
-        await audit(env,admin,"prize_updated","prize",id,{before:current,after:next});
-        return json({success:true,prize:await env.DB.prepare(`SELECT * FROM prizes WHERE id=?`).bind(id).first()});
-      }
-
-      if (prizeMatch && request.method === "DELETE") {
-        const id = prizeMatch[1];
-        const prize = await env.DB.prepare(`SELECT * FROM prizes WHERE id=?`).bind(id).first();
-        if (!prize) return error("Prêmio não encontrado.",404);
-        const draws = await env.DB.prepare(`SELECT COUNT(*) total FROM draws WHERE prize_id=?`).bind(id).first();
-        if (Number(draws?.total||0)>0) return error("Este prêmio já possui sorteios registrados. Desative-o em vez de excluir.",409);
-        await env.DB.prepare(`DELETE FROM prizes WHERE id=?`).bind(id).run();
-        await audit(env,admin,"prize_deleted","prize",id,{name:prize.name});
-        return json({success:true});
-      }
-
-      /*
-      ==========================================
-      ADMIN - EDIÇÃO DE ALUNOS
-      ==========================================
-      */
-      const studentMatch = url.pathname.match(/^\/api\/admin\/students\/([^/]+)$/);
-      if (studentMatch && request.method === "PATCH") {
-        const id=studentMatch[1];
-        const current=await env.DB.prepare(`SELECT * FROM students WHERE id=?`).bind(id).first();
-        if(!current)return error("Aluno não encontrado.",404);
-        const body=await request.json(); const now=new Date().toISOString();
-        const next={name:body.name!==undefined?String(body.name).trim():current.name,whatsapp:body.whatsapp!==undefined?normalizePhone(body.whatsapp):current.whatsapp,phone:body.phone!==undefined?normalizePhone(body.phone):current.phone,email:body.email!==undefined?String(body.email).trim():current.email,active:body.active!==undefined?(Number(body.active)?1:0):current.active};
-        if(!next.name||!next.whatsapp)return error("Nome e WhatsApp são obrigatórios.",422);
-        const duplicate=await env.DB.prepare(`SELECT id FROM students WHERE whatsapp=? AND id<>? LIMIT 1`).bind(next.whatsapp,id).first();
-        if(duplicate)return error("Já existe outro aluno com este WhatsApp.",409);
-        await env.DB.prepare(`UPDATE students SET name=?,whatsapp=?,phone=?,email=?,active=?,updated_at=? WHERE id=?`).bind(next.name,next.whatsapp,next.phone,next.email,next.active,now,id).run();
-        await audit(env,admin,"student_updated","student",id,{before:current,after:next});
-        return json({success:true,student:await env.DB.prepare(`SELECT * FROM students WHERE id=?`).bind(id).first()});
-      }
-
-      /*
-      ==========================================
-      ADMIN - EDIÇÃO / CANCELAMENTO DE INDICAÇÕES
-      ==========================================
-      */
-      const referralMatch = url.pathname.match(/^\/api\/admin\/referrals\/([^/]+)$/);
-      if (referralMatch && request.method === "PATCH") {
-        const id=referralMatch[1]; const current=await env.DB.prepare(`SELECT * FROM referrals WHERE id=?`).bind(id).first();
-        if(!current)return error("Indicação não encontrada.",404);
-        const body=await request.json(); const nextStatus=body.status!==undefined?String(body.status):current.status;
-        if(!["pending","confirmed","cancelled"].includes(nextStatus))return error("Status de indicação inválido.",422);
-        const now=new Date().toISOString();
-        const next={lead_name:body.lead_name!==undefined?String(body.lead_name).trim():current.lead_name,lead_whatsapp:body.lead_whatsapp!==undefined?normalizePhone(body.lead_whatsapp):current.lead_whatsapp,lead_phone:body.lead_phone!==undefined?normalizePhone(body.lead_phone):current.lead_phone,lead_email:body.lead_email!==undefined?String(body.lead_email).trim():current.lead_email,status:nextStatus};
-        if(!next.lead_name||!next.lead_whatsapp)return error("Nome e WhatsApp do indicado são obrigatórios.",422);
-        await env.DB.prepare(`UPDATE referrals SET lead_name=?,lead_whatsapp=?,lead_phone=?,lead_email=?,status=?,cancelled_at=?,cancellation_reason=? WHERE id=?`).bind(next.lead_name,next.lead_whatsapp,next.lead_phone,next.lead_email,next.status,next.status==='cancelled'?now:null,next.status==='cancelled'?String(body.cancellation_reason||"Cancelada pelo administrador"):null,id).run();
-        if(next.status==='cancelled'){
-          await env.DB.prepare(`UPDATE enrollments SET enrollment_status='cancelled',cancelled_at=?,cancellation_reason=?,updated_at=? WHERE referral_id=? AND enrollment_status NOT IN ('cancelled','refunded')`).bind(now,String(body.cancellation_reason||"Indicação cancelada pelo administrador"),now,id).run();
-          await env.DB.prepare(`UPDATE tickets SET status='revoked',revoked_at=?,revoked_reason=? WHERE referral_id=? AND status='available'`).bind(now,"Indicação cancelada",id).run();
+        if (!(file instanceof File)) {
+          return error("Nenhuma imagem foi enviada.", 422);
         }
-        await audit(env,admin,"referral_updated","referral",id,{before:current,after:next});
-        return json({success:true,referral:await env.DB.prepare(`SELECT * FROM referrals WHERE id=?`).bind(id).first()});
+
+        if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+          return error("Formato não permitido. Use JPG, PNG ou WEBP.", 415);
+        }
+
+        if (file.size <= 0 || file.size > MAX_UPLOAD_BYTES) {
+          return error("A imagem deve ter até 5 MB.", 413);
+        }
+
+        const key = `prizes/${crypto.randomUUID()}.${extensionForImageType(file.type)}`;
+        await env.IMAGES.put(key, file.stream(), {
+          httpMetadata: {
+            contentType: file.type,
+            cacheControl: "public, max-age=31536000, immutable"
+          },
+          customMetadata: {
+            originalName: file.name || "imagem",
+            uploadedBy: admin.id
+          }
+        });
+
+        const imageUrl = `${url.origin}/media/${encodeURIComponent(key)}`;
+
+        await audit(env, admin, "image_uploaded", "file", key, {
+          original_name: file.name || "imagem",
+          content_type: file.type,
+          size: file.size,
+          purpose: "prize"
+        });
+
+        return json({
+          success: true,
+          key,
+          url: imageUrl,
+          size: file.size,
+          content_type: file.type
+        }, 201);
       }
 
-      /*
-      ==========================================
-      ADMIN - REVOGAR TICKET
-      ==========================================
-      */
-      const ticketMatch = url.pathname.match(/^\/api\/admin\/tickets\/([^/]+)$/);
-      if(ticketMatch && request.method === "PATCH"){
-        const id=ticketMatch[1]; const current=await env.DB.prepare(`SELECT * FROM tickets WHERE id=?`).bind(id).first();
-        if(!current)return error("Ticket não encontrado.",404);
-        if(current.status==='used')return error("Ticket já utilizado não pode ser revogado.",409);
-        const body=await request.json(); const reason=String(body.reason||"Revogado pelo administrador").trim(); const now=new Date().toISOString();
-        await env.DB.prepare(`UPDATE tickets SET status='revoked',revoked_at=?,revoked_reason=? WHERE id=? AND status='available'`).bind(now,reason,id).run();
-        await audit(env,admin,"ticket_revoked","ticket",id,{reason,code:current.code});
-        return json({success:true});
-      }
-
-      /*
-      ==========================================
-      ADMIN - LIBERAÇÃO ANTECIPADA
-      ==========================================
-      */
-      const earlyMatch=url.pathname.match(/^\/api\/admin\/enrollments\/([^/]+)\/confirm-early$/);
-      if(earlyMatch && request.method==='POST'){
-        const enrollmentId=earlyMatch[1]; const body=await request.json(); const reason=String(body.reason||"").trim();
-        if(!reason)return error("Informe o motivo da liberação antecipada.",422);
-        const enrollment=await env.DB.prepare(`SELECT e.*,r.student_id FROM enrollments e JOIN referrals r ON r.id=e.referral_id WHERE e.id=? LIMIT 1`).bind(enrollmentId).first();
-        if(!enrollment)return error("Matrícula não encontrada.",404);
-        if(['cancelled','refunded'].includes(enrollment.enrollment_status))return error("Matrícula cancelada ou reembolsada.",409);
-        const existing=await env.DB.prepare(`SELECT * FROM tickets WHERE referral_id=? LIMIT 1`).bind(enrollment.referral_id).first();
-        if(existing)return error("Esta indicação já possui ticket.",409);
-        const code=await uniqueTicket(env), now=new Date().toISOString(), ticketId=crypto.randomUUID();
-        await env.DB.batch([
-          env.DB.prepare(`UPDATE enrollments SET enrollment_status='confirmed',confirmed_at=?,confirmed_by=?,updated_at=? WHERE id=?`).bind(now,admin.id,now,enrollmentId),
-          env.DB.prepare(`UPDATE referrals SET status='confirmed',confirmed_at=?,confirmed_by=? WHERE id=?`).bind(now,admin.id,enrollment.referral_id),
-          env.DB.prepare(`INSERT INTO tickets (id,campaign_id,student_id,referral_id,code,status,created_at) VALUES (?,?,?,?,?,'available',?)`).bind(ticketId,enrollment.campaign_id,enrollment.student_id,enrollment.referral_id,code,now)
-        ]);
-        await audit(env,admin,"early_ticket_release","enrollment",enrollmentId,{referral_id:enrollment.referral_id,ticket_code:code,reason,override_7_days:true,eligible_at:enrollment.eligible_at});
-        return json({success:true,message:"Ticket liberado antecipadamente.",ticket:{id:ticketId,code,status:"available"}});
-      }
-
-      /*
-      ==========================================
-      ADMIN - RANKING
-      ==========================================
-      */
-      if(request.method==='GET' && url.pathname==='/api/admin/ranking'){
-        const result=await env.DB.prepare(`
-          SELECT s.id,s.name,s.whatsapp,
-            COUNT(DISTINCT r.id) referrals,
-            COUNT(DISTINCT CASE WHEN r.status='confirmed' THEN r.id END) confirmed_referrals,
-            COUNT(DISTINCT t.id) tickets,
-            COUNT(DISTINCT d.id) draws
-          FROM students s
-          LEFT JOIN referrals r ON r.student_id=s.id
-          LEFT JOIN tickets t ON t.student_id=s.id
-          LEFT JOIN draws d ON d.student_id=s.id
-          GROUP BY s.id
-          ORDER BY confirmed_referrals DESC, referrals DESC, tickets DESC, s.name ASC
-          LIMIT 100
-        `).all();
-        return json({success:true,ranking:result.results||[]});
-      }
-
-      /*
-      ==========================================
-      ADMIN - HISTÓRICO
-      ==========================================
-      */
-      if(request.method==='GET' && url.pathname==='/api/admin/history'){
-        const result=await env.DB.prepare(`
-          SELECT a.id,a.action,a.entity_type,a.entity_id,a.details_json,a.created_at,
-                 COALESCE(ad.name,'Sistema') admin_name
-          FROM audit_logs a
-          LEFT JOIN admins ad ON ad.id=a.admin_id
-          ORDER BY a.created_at DESC
-          LIMIT 500
-        `).all();
-        return json({success:true,history:result.results||[]});
-      }
-
-      /*
-      ==========================================
-      ADMIN - EXPORTAÇÕES CSV
-      ==========================================
-      */
-      if(request.method==='GET' && url.pathname.startsWith('/api/admin/export/')){
-        const type=url.pathname.split('/').pop(); let rows=[],columns=[];
-        if(type==='students'){
-          rows=(await env.DB.prepare(`SELECT * FROM students ORDER BY created_at DESC`).all()).results||[];
-          columns=[{key:'name',label:'Nome'},{key:'whatsapp',label:'WhatsApp'},{key:'phone',label:'Telefone'},{key:'email',label:'E-mail'},{key:'active',label:'Ativo'},{key:'created_at',label:'Criado em'}];
-        } else if(type==='referrals'){
-          rows=(await env.DB.prepare(`SELECT r.*,s.name student_name,s.whatsapp student_whatsapp FROM referrals r JOIN students s ON s.id=r.student_id ORDER BY r.created_at DESC`).all()).results||[];
-          columns=[{key:'lead_name',label:'Lead'},{key:'lead_whatsapp',label:'WhatsApp'},{key:'lead_email',label:'E-mail'},{key:'student_name',label:'Indicador'},{key:'student_whatsapp',label:'WhatsApp indicador'},{key:'status',label:'Status'},{key:'created_at',label:'Criado em'},{key:'eligible_at',label:'Elegível em'}];
-        } else if(type==='enrollments'){
-          rows=(await env.DB.prepare(`SELECT e.*,s.name indicator_name,s.whatsapp indicator_whatsapp FROM enrollments e JOIN referrals r ON r.id=e.referral_id JOIN students s ON s.id=r.student_id ORDER BY e.created_at DESC`).all()).results||[];
-          columns=[{key:'lead_name',label:'Lead'},{key:'indicator_name',label:'Indicador'},{key:'indicator_whatsapp',label:'WhatsApp indicador'},{key:'enrollment_status',label:'Status'},{key:'paid_at',label:'Pago em'},{key:'eligible_at',label:'Elegível em'},{key:'confirmed_at',label:'Confirmado em'}];
-        } else if(type==='tickets'){
-          rows=(await env.DB.prepare(`SELECT t.*,s.name student_name,s.whatsapp student_whatsapp FROM tickets t JOIN students s ON s.id=t.student_id ORDER BY t.created_at DESC`).all()).results||[];
-          columns=[{key:'code',label:'Ticket'},{key:'student_name',label:'Aluno'},{key:'student_whatsapp',label:'WhatsApp'},{key:'status',label:'Status'},{key:'created_at',label:'Criado em'},{key:'used_at',label:'Usado em'},{key:'revoked_reason',label:'Motivo revogação'}];
-        } else if(type==='draws'){
-          rows=(await env.DB.prepare(`SELECT d.*,t.code ticket_code,s.name student_name,p.name prize_name FROM draws d JOIN tickets t ON t.id=d.ticket_id JOIN students s ON s.id=d.student_id JOIN prizes p ON p.id=d.prize_id ORDER BY d.drawn_at DESC`).all()).results||[];
-          columns=[{key:'drawn_at',label:'Data'},{key:'ticket_code',label:'Ticket'},{key:'student_name',label:'Aluno'},{key:'prize_name',label:'Prêmio'}];
-        } else return error('Tipo de exportação inválido.',404);
-        return csvResponse(rows,columns);
-      }
 
       /*
       ==========================================
