@@ -1,45 +1,22 @@
-# Indica+
+# Indica+ Final
 
-MVP do sistema de campanhas de indicação.
-
-## O que já funciona nesta primeira versão
-
-- Site público responsivo
-- Área do aluno
-- Cadastro de indicação
-- Painel administrativo
-- Controle de indicações
-- Regra de 7 dias para elegibilidade
-- Confirmação manual da matrícula
-- Geração de ticket único após confirmação
-- Cadastro e estoque de prêmios
-- Sorteio usando ticket disponível
-- Histórico básico de tickets e prêmios
-- Personalização da campanha pelo admin
-- Relatórios de leads e ranking
-- Exportação CSV compatível com Excel
-- Impressão de relatório em PDF pelo navegador
-- PWA básico
-
-## Importante
-
-Esta versão usa `localStorage` apenas para permitir testes imediatos no navegador.
-
-A próxima etapa de produção é substituir o armazenamento local pelo:
-
-- Cloudflare Workers
-- Cloudflare D1
-- autenticação administrativa
-- armazenamento de imagens
-- regras de sorteio no backend
-
-Nunca coloque segredos, tokens ou credenciais diretamente no frontend.
+Arquivos finais para publicação manual.
 
 ## Estrutura
+- `worker.js` -> Cloudflare Worker/API
+- `aluno.html` -> área pública do aluno
+- `index.html` -> redireciona para `aluno.html`
+- `admin/index.html` -> painel administrativo
+- `js/config.js` -> configuração da API
 
-- `/index.html` página pública
-- `/aluno.html` área do aluno
-- `/admin/index.html` painel administrativo
-- `/css` estilos
-- `/js` lógica
-- `/assets` ícones e imagens
+## API
+`https://indica-mais-api.evoluamaisprofissoes.workers.dev`
+
+## Publicação
+1. Substitua o Worker atual pelo `worker.js` e faça Deploy.
+2. No GitHub Pages, substitua/adapte os arquivos do frontend.
+3. Abra `/admin/` para o painel.
+4. Abra `/aluno.html` para a área do aluno.
+
+## Regra de negócio
+Indicação não gera ticket. Ticket somente após matrícula paga, 7 dias de segurança e confirmação administrativa. O sorteio é validado no servidor.
