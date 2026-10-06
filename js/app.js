@@ -1,47 +1,1036 @@
-const DBKEY=window.INDICA_CONFIG.storageKey;
-const defaultData={
- campaign:{name:"Outubro Premiado",badge:"CAMPANHA ATIVA",title:"Indique. Ganhe. Evolua.",subtitle:"Indique novos alunos, acumule tickets e participe de sorteios incríveis.",logoText:"Indica+",primary:"#6d28d9",secondary:"#8b5cf6"},
- prizes:[{id:"p1",name:"Bolsa de Estudos Integral",desc:"Uma bolsa de estudos para transformar sua próxima fase.",icon:"🎓",stock:2,active:true},{id:"p2",name:"Kit Evolua+",desc:"Um kit especial para acompanhar sua jornada.",icon:"🎒",stock:10,active:true},{id:"p3",name:"Curso Premium",desc:"Acesso a um curso premium da campanha.",icon:"💻",stock:8,active:true},{id:"p4",name:"1 Mês Grátis",desc:"Um mês de acesso sem custo.",icon:"⭐",stock:20,active:true}],
- students:[], referrals:[], tickets:[], wins:[]
-};
-function getData(){let d=localStorage.getItem(DBKEY);if(!d){localStorage.setItem(DBKEY,JSON.stringify(defaultData));return structuredClone(defaultData)}return JSON.parse(d)}
-function saveData(d){localStorage.setItem(DBKEY,JSON.stringify(d))}
-function toast(msg){const t=document.getElementById("toast");if(!t)return;t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2800)}
-function uid(prefix="id"){return prefix+"_"+Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-4)}
-function fmtDate(s){return new Date(s).toLocaleDateString("pt-BR")}
-function currentStudent(){return JSON.parse(localStorage.getItem("indica_current_student")||"null")}
-function setStudent(s){localStorage.setItem("indica_current_student",JSON.stringify(s))}
-function ensureStudent(phone,name="Novo aluno"){let d=getData();let p=phone.replace(/\D/g,"");let s=d.students.find(x=>x.phone===p);if(!s){s={id:uid("stu"),name,phone:p,email:"",createdAt:new Date().toISOString()};d.students.push(s);saveData(d)}return s}
+const API = (window.INDICA_CONFIG?.apiBaseUrl || "").replace(/\/$/, "");
 
-function initPublic(){
- const d=getData(), c=d.campaign;
- document.documentElement.style.setProperty("--primary",c.primary);document.documentElement.style.setProperty("--primary2",c.secondary);
- const set=(id,val)=>{const e=document.getElementById(id);if(e)e.innerHTML=val};
- set("brandName",(c.logoText||"Indica+").replace("+","<span>+</span>"));set("campaignBadge",c.badge);set("campaignTitle",c.title.replace(/Evolua\./i,"<span>Evolua.</span>"));set("campaignSubtitle",c.subtitle);
- const tickets=d.tickets.filter(t=>t.status==="available").length;
- set("heroTickets",tickets);set("heroPrizes",d.prizes.filter(p=>p.active).length);set("heroIndications",d.referrals.length);
- const grid=document.getElementById("publicPrizes");if(grid)grid.innerHTML=d.prizes.filter(p=>p.active).map(p=>`<article class="prize"><div class="prize-icon">${p.icon}</div><h3>${p.name}</h3><p>${p.desc}</p></article>`).join("");
- const form=document.getElementById("loginForm");if(form)form.onsubmit=e=>{e.preventDefault();const phone=document.getElementById("loginPhone").value;const s=ensureStudent(phone);setStudent(s);location.href="aluno.html"};
+const STUDENT_TOKEN_KEY = "indica_student_token";
+const STUDENT_KEY = "indica_current_student";
+
+function apiUrl(path) {
+  return `${API}${path}`;
 }
-function initStudent(){
- const s=currentStudent();if(!s){location.href="index.html#acessar";return}renderStudent();
- document.getElementById("logoutBtn").onclick=()=>{localStorage.removeItem("indica_current_student");location.href="index.html"};
- document.getElementById("openReferral").onclick=()=>document.getElementById("referralModal").classList.add("open");
- document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>b.closest(".modal").classList.remove("open"));
- document.getElementById("referralForm").onsubmit=e=>{e.preventDefault();let d=getData();d.referrals.push({id:uid("ref"),studentId:s.id,name:document.getElementById("refName").value.trim(),phone:document.getElementById("refPhone").value.replace(/\D/g,""),email:document.getElementById("refEmail").value.trim(),status:"pending",createdAt:new Date().toISOString(),eligibleAt:new Date(Date.now()+7*86400000).toISOString()});saveData(d);e.target.reset();document.getElementById("referralModal").classList.remove("open");toast("Indicação registrada!");renderStudent()};
- document.getElementById("drawForm").onsubmit=e=>{e.preventDefault();drawTicket()};
+
+async function apiFetch(path, options = {}) {
+  const token = localStorage.getItem(STUDENT_TOKEN_KEY);
+
+  const headers = {
+    "Content-Type": "application/json",
+    ...(options.headers || {})
+  };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(apiUrl(path), {
+    ...options,
+    headers
+  });
+
+  let data = {};
+
+  try {
+    data = await response.json();
+  } catch {
+    data = {
+      success: false,
+      error: "Resposta inválida da API."
+    };
+  }
+
+  if (!response.ok || data.success === false) {
+    const err = new Error(
+      data.error || "Não foi possível concluir a operação."
+    );
+
+    err.status = response.status;
+    throw err;
+  }
+
+  return data;
 }
-function renderStudent(){
- const s=currentStudent(),d=getData(),refs=d.referrals.filter(r=>r.studentId===s.id), tickets=d.tickets.filter(t=>t.studentId===s.id),available=tickets.filter(t=>t.status==="available"),wins=d.wins.filter(w=>w.studentId===s.id);
- document.getElementById("studentName").textContent=s.name;document.getElementById("helloName").textContent=s.name.split(" ")[0];document.getElementById("mIndications").textContent=refs.length;document.getElementById("mConfirmed").textContent=refs.filter(r=>r.status==="confirmed").length;document.getElementById("mTickets").textContent=available.length;document.getElementById("mWins").textContent=wins.length;document.getElementById("ticketCount").textContent=`${available.length} disponíveis`;
- document.getElementById("ticketList").innerHTML=available.length?available.map(t=>`<div class="ticket-row"><div><code>${t.code}</code><small>Ticket disponível</small></div><span class="status confirmed">DISPONÍVEL</span></div>`).join(""):`<div class="empty">Você ainda não tem tickets disponíveis. Continue indicando! 🚀</div>`;
- document.getElementById("referralList").innerHTML=refs.length?refs.slice().reverse().map(r=>`<div class="ref-row"><strong>${r.name}</strong><span class="status ${r.status==="confirmed"?"confirmed":r.status==="cancelled"?"cancelled":"pending"}">${r.status==="confirmed"?"CONFIRMADA":r.status==="cancelled"?"CANCELADA":"AGUARDANDO"}</span><small>${r.status==="pending"?`Aguardando confirmação da matrícula. Elegível em ${fmtDate(r.eligibleAt)}`:`Indicação convertida em matrícula.`}</small></div>`).join(""):`<div class="empty">Nenhuma indicação ainda.</div>`;
+
+
+function toast(msg) {
+  const t = document.getElementById("toast");
+
+  if (!t) {
+    alert(msg);
+    return;
+  }
+
+  t.textContent = msg;
+  t.classList.add("show");
+
+  setTimeout(() => {
+    t.classList.remove("show");
+  }, 2800);
 }
-function drawTicket(){
- const s=currentStudent(),d=getData(),input=document.getElementById("ticketInput").value.trim().toUpperCase(),t=d.tickets.find(x=>x.studentId===s.id&&x.code===input&&x.status==="available"),out=document.getElementById("drawResult");
- if(!t){out.innerHTML=`<div class="win-card"><div class="big">🎟️</div><b>Ticket não encontrado</b><p>Confira o código e tente novamente.</p></div>`;return}
- const pool=d.prizes.filter(p=>p.active&&p.stock>0);if(!pool.length){out.innerHTML=`<div class="win-card"><div class="big">⚠️</div><b>Campanha sem prêmios disponíveis</b></div>`;return}
- const prize=pool[Math.floor(Math.random()*pool.length)];t.status="used";t.usedAt=new Date().toISOString();t.prizeId=prize.id;prize.stock--;d.wins.push({id:uid("win"),studentId:s.id,ticketId:t.id,prizeId:prize.id,createdAt:new Date().toISOString()});saveData(d);
- out.innerHTML=`<div class="win-card"><div class="big">${prize.icon}</div><h3>Você ganhou!</h3><p><b>${prize.name}</b></p><small>Ticket ${t.code} utilizado em ${new Date().toLocaleString("pt-BR")}</small></div>`;document.getElementById("ticketInput").value="";renderStudent();
+
+
+function fmtDate(value) {
+  if (!value) return "-";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
+  return date.toLocaleDateString("pt-BR");
 }
-if(location.pathname.endsWith("/aluno.html"))initStudent();else if(!location.pathname.includes("/admin/"))initPublic();
+
+
+function fmtDateTime(value) {
+  if (!value) return "-";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
+  return date.toLocaleString("pt-BR");
+}
+
+
+function currentStudent() {
+  try {
+    return JSON.parse(
+      localStorage.getItem(STUDENT_KEY) || "null"
+    );
+  } catch {
+    return null;
+  }
+}
+
+
+function setStudent(student) {
+  localStorage.setItem(
+    STUDENT_KEY,
+    JSON.stringify(student)
+  );
+}
+
+
+function clearStudentSession() {
+  localStorage.removeItem(STUDENT_TOKEN_KEY);
+  localStorage.removeItem(STUDENT_KEY);
+}
+
+
+/*
+==================================================
+PÁGINA PÚBLICA
+==================================================
+*/
+
+async function initPublic() {
+
+  /*
+  ------------------------------------------
+  CAMPANHA
+  ------------------------------------------
+  */
+
+  try {
+
+    const campaignResponse =
+      await apiFetch("/api/campaign");
+
+    const campaign =
+      campaignResponse.campaign;
+
+    if (campaign) {
+
+      document.documentElement.style.setProperty(
+        "--primary",
+        campaign.primary_color || "#6d28d9"
+      );
+
+      document.documentElement.style.setProperty(
+        "--primary2",
+        campaign.secondary_color || "#8b5cf6"
+      );
+
+      const set = (id, value) => {
+        const element =
+          document.getElementById(id);
+
+        if (element) {
+          element.innerHTML = value ?? "";
+        }
+      };
+
+      set(
+        "brandName",
+        (campaign.logo_text || "Indica+")
+          .replace(
+            "+",
+            "<span>+</span>"
+          )
+      );
+
+      set(
+        "campaignBadge",
+        campaign.badge ||
+        "CAMPANHA ATIVA"
+      );
+
+      set(
+        "campaignTitle",
+        String(
+          campaign.title ||
+          "Indique. Ganhe. Evolua."
+        ).replace(
+          /Evolua\./i,
+          "<span>Evolua.</span>"
+        )
+      );
+
+      set(
+        "campaignSubtitle",
+        campaign.subtitle || ""
+      );
+    }
+
+  } catch (error) {
+
+    console.error(
+      "Erro ao carregar campanha:",
+      error
+    );
+  }
+
+
+  /*
+  ------------------------------------------
+  ESTATÍSTICAS
+  ------------------------------------------
+  */
+
+  try {
+
+    const statsResponse =
+      await apiFetch("/api/stats");
+
+    const stats =
+      statsResponse.stats || {};
+
+    const set = (id, value) => {
+
+      const element =
+        document.getElementById(id);
+
+      if (element) {
+        element.textContent =
+          value ?? 0;
+      }
+    };
+
+    set(
+      "heroTickets",
+      stats.tickets
+    );
+
+    set(
+      "heroPrizes",
+      stats.prizes
+    );
+
+    set(
+      "heroIndications",
+      stats.referrals
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Erro ao carregar estatísticas:",
+      error
+    );
+  }
+
+
+  /*
+  ------------------------------------------
+  LOGIN
+  ------------------------------------------
+  */
+
+  const form =
+    document.getElementById("loginForm");
+
+  if (form) {
+
+    form.onsubmit = async event => {
+
+      event.preventDefault();
+
+      const input =
+        document.getElementById(
+          "loginPhone"
+        );
+
+      const phone =
+        input?.value?.trim() || "";
+
+      if (!phone) {
+
+        toast(
+          "Informe seu WhatsApp."
+        );
+
+        return;
+      }
+
+
+      /*
+      ----------------------------------------
+      TENTA RECUPERAR NOME ANTIGO
+      ----------------------------------------
+      */
+
+      const oldStudent =
+        currentStudent();
+
+      const oldName =
+        oldStudent?.name || "";
+
+
+      try {
+
+        const response =
+          await apiFetch(
+            "/api/student/login",
+            {
+              method: "POST",
+
+              body: JSON.stringify({
+                name:
+                  oldName || "Aluno",
+
+                whatsapp:
+                  phone
+              })
+            }
+          );
+
+
+        /*
+        --------------------------------------
+        SALVA APENAS SESSÃO
+        --------------------------------------
+        */
+
+        localStorage.setItem(
+          STUDENT_TOKEN_KEY,
+          response.token
+        );
+
+        setStudent(
+          response.student
+        );
+
+
+        location.href =
+          "aluno.html";
+
+      } catch (error) {
+
+        console.error(error);
+
+        toast(
+          error.message ||
+          "Não foi possível entrar."
+        );
+      }
+    };
+  }
+}
+
+
+/*
+==================================================
+PÁGINA DO ALUNO
+==================================================
+*/
+
+async function initStudent() {
+
+  const token =
+    localStorage.getItem(
+      STUDENT_TOKEN_KEY
+    );
+
+  if (!token) {
+
+    location.href =
+      "index.html#acessar";
+
+    return;
+  }
+
+
+  /*
+  ------------------------------------------
+  VALIDAR SESSÃO
+  ------------------------------------------
+  */
+
+  try {
+
+    const me =
+      await apiFetch(
+        "/api/student/me"
+      );
+
+    setStudent(
+      me.student
+    );
+
+  } catch (error) {
+
+    console.error(error);
+
+    clearStudentSession();
+
+    location.href =
+      "index.html#acessar";
+
+    return;
+  }
+
+
+  /*
+  ------------------------------------------
+  BOTÃO SAIR
+  ------------------------------------------
+  */
+
+  const logoutBtn =
+    document.getElementById(
+      "logoutBtn"
+    );
+
+  if (logoutBtn) {
+
+    logoutBtn.onclick =
+      async () => {
+
+        try {
+
+          await apiFetch(
+            "/api/student/logout",
+            {
+              method: "POST"
+            }
+          );
+
+        } catch (error) {
+
+          console.error(error);
+
+        } finally {
+
+          clearStudentSession();
+
+          location.href =
+            "index.html";
+        }
+      };
+  }
+
+
+  /*
+  ------------------------------------------
+  MODAL NOVA INDICAÇÃO
+  ------------------------------------------
+  */
+
+  const openReferral =
+    document.getElementById(
+      "openReferral"
+    );
+
+  if (openReferral) {
+
+    openReferral.onclick = () => {
+
+      const modal =
+        document.getElementById(
+          "referralModal"
+        );
+
+      if (modal) {
+        modal.classList.add("open");
+      }
+    };
+  }
+
+
+  document
+    .querySelectorAll("[data-close]")
+    .forEach(button => {
+
+      button.onclick = () => {
+
+        const modal =
+          button.closest(".modal");
+
+        if (modal) {
+          modal.classList.remove(
+            "open"
+          );
+        }
+      };
+    });
+
+
+  /*
+  ------------------------------------------
+  FORMULÁRIO DE INDICAÇÃO
+  ------------------------------------------
+  */
+
+  const referralForm =
+    document.getElementById(
+      "referralForm"
+    );
+
+  if (referralForm) {
+
+    referralForm.onsubmit =
+      async event => {
+
+        event.preventDefault();
+
+        const name =
+          document
+            .getElementById("refName")
+            ?.value
+            .trim() || "";
+
+        const whatsapp =
+          document
+            .getElementById("refPhone")
+            ?.value
+            .trim() || "";
+
+        const email =
+          document
+            .getElementById("refEmail")
+            ?.value
+            .trim() || "";
+
+
+        if (!name) {
+
+          toast(
+            "Informe o nome do indicado."
+          );
+
+          return;
+        }
+
+        if (!whatsapp) {
+
+          toast(
+            "Informe o WhatsApp do indicado."
+          );
+
+          return;
+        }
+
+
+        const submitButton =
+          referralForm.querySelector(
+            "button[type='submit']"
+          ) ||
+          referralForm.querySelector(
+            "button"
+          );
+
+        const originalText =
+          submitButton?.textContent;
+
+
+        try {
+
+          if (submitButton) {
+
+            submitButton.disabled =
+              true;
+
+            submitButton.textContent =
+              "Registrando...";
+          }
+
+
+          await apiFetch(
+            "/api/student/referrals",
+            {
+              method: "POST",
+
+              body: JSON.stringify({
+                name,
+                whatsapp,
+                email
+              })
+            }
+          );
+
+
+          referralForm.reset();
+
+
+          const modal =
+            document.getElementById(
+              "referralModal"
+            );
+
+          if (modal) {
+            modal.classList.remove(
+              "open"
+            );
+          }
+
+
+          toast(
+            "Indicação registrada com sucesso! 🎉"
+          );
+
+
+          await renderStudent();
+
+        } catch (error) {
+
+          console.error(error);
+
+          toast(
+            error.message ||
+            "Não foi possível registrar a indicação."
+          );
+
+        } finally {
+
+          if (submitButton) {
+
+            submitButton.disabled =
+              false;
+
+            submitButton.textContent =
+              originalText ||
+              "Registrar indicação";
+          }
+        }
+      };
+  }
+
+
+  /*
+  ------------------------------------------
+  SORTEIO
+  ------------------------------------------
+  */
+
+  const drawForm =
+    document.getElementById(
+      "drawForm"
+    );
+
+  if (drawForm) {
+
+    drawForm.onsubmit =
+      event => {
+
+        event.preventDefault();
+
+        const result =
+          document.getElementById(
+            "drawResult"
+          );
+
+        if (result) {
+
+          result.innerHTML = `
+            <div class="win-card">
+              <div class="big">🎰</div>
+              <b>Sorteio em preparação</b>
+              <p>
+                O sorteio será realizado
+                pelo sistema oficial da campanha.
+              </p>
+            </div>
+          `;
+        }
+      };
+  }
+
+
+  /*
+  ------------------------------------------
+  CARREGA DADOS
+  ------------------------------------------
+  */
+
+  await renderStudent();
+}
+
+
+/*
+==================================================
+RENDERIZA ÁREA DO ALUNO
+==================================================
+*/
+
+async function renderStudent() {
+
+  try {
+
+    const response =
+      await apiFetch(
+        "/api/student/dashboard"
+      );
+
+    const student =
+      response.student;
+
+    const referrals =
+      response.referrals || [];
+
+    const tickets =
+      response.tickets || [];
+
+    const wins =
+      response.wins || [];
+
+
+    /*
+    ------------------------------------------
+    DADOS DO ALUNO
+    ------------------------------------------
+    */
+
+    setStudent(student);
+
+
+    const studentName =
+      document.getElementById(
+        "studentName"
+      );
+
+    if (studentName) {
+      studentName.textContent =
+        student.name || "Aluno";
+    }
+
+
+    const helloName =
+      document.getElementById(
+        "helloName"
+      );
+
+    if (helloName) {
+
+      helloName.textContent =
+        String(
+          student.name || "Aluno"
+        )
+        .split(" ")[0];
+    }
+
+
+    /*
+    ------------------------------------------
+    MÉTRICAS
+    ------------------------------------------
+    */
+
+    const availableTickets =
+      tickets.filter(
+        ticket =>
+          ticket.status === "available"
+      );
+
+
+    const confirmed =
+      referrals.filter(
+        referral =>
+          referral.status === "confirmed"
+      );
+
+
+    const set = (
+      id,
+      value
+    ) => {
+
+      const element =
+        document.getElementById(id);
+
+      if (element) {
+        element.textContent =
+          value;
+      }
+    };
+
+
+    set(
+      "mIndications",
+      referrals.length
+    );
+
+    set(
+      "mConfirmed",
+      confirmed.length
+    );
+
+    set(
+      "mTickets",
+      availableTickets.length
+    );
+
+    set(
+      "mWins",
+      wins.length
+    );
+
+    set(
+      "ticketCount",
+      `${availableTickets.length} disponíveis`
+    );
+
+
+    /*
+    ------------------------------------------
+    TICKETS
+    ------------------------------------------
+    */
+
+    const ticketList =
+      document.getElementById(
+        "ticketList"
+      );
+
+    if (ticketList) {
+
+      if (!availableTickets.length) {
+
+        ticketList.innerHTML = `
+          <div class="empty">
+            Você ainda não tem tickets disponíveis.
+            Continue indicando! 🚀
+          </div>
+        `;
+
+      } else {
+
+        ticketList.innerHTML =
+          availableTickets
+            .map(ticket => `
+              <div class="ticket-row">
+
+                <div>
+
+                  <code>
+                    ${escapeHtml(
+                      ticket.code
+                    )}
+                  </code>
+
+                  <small>
+                    Ticket disponível
+                  </small>
+
+                </div>
+
+                <span class="status confirmed">
+                  DISPONÍVEL
+                </span>
+
+              </div>
+            `)
+            .join("");
+      }
+    }
+
+
+    /*
+    ------------------------------------------
+    INDICAÇÕES
+    ------------------------------------------
+    */
+
+    const referralList =
+      document.getElementById(
+        "referralList"
+      );
+
+    if (referralList) {
+
+      if (!referrals.length) {
+
+        referralList.innerHTML = `
+          <div class="empty">
+            Nenhuma indicação ainda.
+          </div>
+        `;
+
+      } else {
+
+        referralList.innerHTML =
+          referrals
+            .map(referral => {
+
+              let statusClass =
+                "pending";
+
+              let statusText =
+                "AGUARDANDO";
+
+              let description =
+                `Aguardando confirmação da matrícula. Elegível em ${fmtDate(
+                  referral.eligible_at
+                )}`;
+
+
+              if (
+                referral.status ===
+                "confirmed"
+              ) {
+
+                statusClass =
+                  "confirmed";
+
+                statusText =
+                  "CONFIRMADA";
+
+                description =
+                  "Indicação convertida em matrícula e ticket gerado.";
+              }
+
+
+              if (
+                referral.status ===
+                "cancelled"
+              ) {
+
+                statusClass =
+                  "cancelled";
+
+                statusText =
+                  "CANCELADA";
+
+                description =
+                  "Esta indicação foi cancelada.";
+              }
+
+
+              return `
+                <div class="ref-row">
+
+                  <strong>
+                    ${escapeHtml(
+                      referral.lead_name
+                    )}
+                  </strong>
+
+                  <span class="status ${statusClass}">
+                    ${statusText}
+                  </span>
+
+                  <small>
+                    ${description}
+                  </small>
+
+                </div>
+              `;
+            })
+            .join("");
+      }
+    }
+
+
+  } catch (error) {
+
+    console.error(
+      "Erro ao carregar área do aluno:",
+      error
+    );
+
+
+    if (
+      error.status === 401
+    ) {
+
+      clearStudentSession();
+
+      location.href =
+        "index.html#acessar";
+
+      return;
+    }
+
+
+    toast(
+      error.message ||
+      "Não foi possível carregar seus dados."
+    );
+  }
+}
+
+
+/*
+==================================================
+SEGURANÇA BÁSICA PARA HTML
+==================================================
+*/
+
+function escapeHtml(value) {
+
+  return String(
+    value ?? ""
+  )
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+    .replace(
+      /</g,
+      "&lt;"
+    )
+    .replace(
+      />/g,
+      "&gt;"
+    )
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+}
+
+
+/*
+==================================================
+INICIALIZAÇÃO
+==================================================
+*/
+
+if (
+  location.pathname.endsWith(
+    "/aluno.html"
+  )
+) {
+
+  initStudent();
+
+} else if (
+  !location.pathname.includes(
+    "/admin/"
+  )
+) {
+
+  initPublic();
+}
