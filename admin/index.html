@@ -1,1466 +1,2430 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>Indica+ | Administração</title>
-
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: Arial, Helvetica, sans-serif;
-      background: #f5f3ff;
-      color: #1f2937;
-    }
-
-    button,
-    input {
-      font: inherit;
-    }
-
-    /* =========================
-       LOGIN
-    ========================= */
-
-    #loginScreen {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-
-      background:
-        radial-gradient(
-          circle at top left,
-          #8b5cf6 0%,
-          transparent 35%
-        ),
-        radial-gradient(
-          circle at bottom right,
-          #6d28d9 0%,
-          transparent 35%
-        ),
-        #17112b;
-    }
-
-    .login-card {
-      width: 100%;
-      max-width: 420px;
-      background: white;
-      border-radius: 24px;
-      padding: 38px 32px;
-      box-shadow: 0 25px 70px rgba(0,0,0,.30);
-    }
-
-    .logo {
-      text-align: center;
-      margin-bottom: 28px;
-    }
-
-    .logo-icon {
-      width: 70px;
-      height: 70px;
-      margin: 0 auto 14px;
-
-      border-radius: 20px;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      background:
-        linear-gradient(
-          135deg,
-          #6d28d9,
-          #8b5cf6
-        );
-
-      color: white;
-      font-size: 32px;
-      font-weight: bold;
-
-      box-shadow:
-        0 12px 30px
-        rgba(109,40,217,.30);
-    }
-
-    .logo h1 {
-      font-size: 28px;
-      color: #4c1d95;
-    }
-
-    .logo p {
-      margin-top: 5px;
-      color: #6b7280;
-      font-size: 14px;
-    }
 
-    .field {
-      margin-bottom: 18px;
-    }
+<meta charset="UTF-8">
 
-    .field label {
-      display: block;
-      font-size: 14px;
-      font-weight: bold;
-      margin-bottom: 7px;
-      color: #374151;
-    }
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
 
-    .field input {
-      width: 100%;
-      padding: 14px 15px;
+<title>Indica+ | Administração</title>
 
-      border:
-        1px solid #d1d5db;
+<style>
 
-      border-radius: 12px;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-      outline: none;
+body {
 
-      transition: .2s;
-    }
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
 
-    .field input:focus {
-      border-color: #7c3aed;
+  background: #f5f3ff;
 
-      box-shadow:
-        0 0 0 3px
-        rgba(124,58,237,.12);
-    }
+  color: #1f2937;
+}
 
-    .login-button {
-      width: 100%;
+button,
+input {
+  font: inherit;
+}
 
-      border: 0;
+/* ==================================================
+LOGIN
+================================================== */
 
-      padding: 15px;
+#loginScreen {
 
-      border-radius: 12px;
+  min-height: 100vh;
 
-      background:
-        linear-gradient(
-          135deg,
-          #6d28d9,
-          #8b5cf6
-        );
+  display: flex;
 
-      color: white;
+  align-items: center;
 
-      font-weight: bold;
+  justify-content: center;
 
-      cursor: pointer;
+  padding: 20px;
 
-      transition: .2s;
+  background:
 
-      margin-top: 4px;
-    }
+    radial-gradient(
+      circle at top left,
+      #8b5cf6 0%,
+      transparent 35%
+    ),
 
-    .login-button:hover {
-      transform: translateY(-1px);
+    radial-gradient(
+      circle at bottom right,
+      #6d28d9 0%,
+      transparent 35%
+    ),
 
-      box-shadow:
-        0 10px 25px
-        rgba(109,40,217,.25);
-    }
+    #17112b;
+}
 
-    .login-button:disabled {
-      opacity: .6;
-      cursor: wait;
-      transform: none;
-    }
+.login-card {
 
-    .error {
-      display: none;
+  width: 100%;
 
-      margin-bottom: 16px;
+  max-width: 420px;
 
-      padding: 12px;
+  background: white;
 
-      border-radius: 10px;
+  border-radius: 24px;
 
-      background: #fee2e2;
+  padding: 38px 32px;
 
-      color: #991b1b;
+  box-shadow:
+    0 25px 70px
+    rgba(0,0,0,.30);
+}
 
-      font-size: 14px;
-    }
+.logo {
 
-    .success {
-      display: none;
+  text-align: center;
 
-      margin-bottom: 16px;
+  margin-bottom: 28px;
+}
 
-      padding: 12px;
+.logo-icon {
 
-      border-radius: 10px;
+  width: 70px;
 
-      background: #dcfce7;
+  height: 70px;
 
-      color: #166534;
+  margin:
+    0 auto 14px;
 
-      font-size: 14px;
-    }
+  border-radius: 20px;
 
-    /* =========================
-       PAINEL
-    ========================= */
+  display: flex;
 
-    #adminScreen {
-      display: none;
-      min-height: 100vh;
-    }
+  align-items: center;
 
-    .topbar {
-      background: #17112b;
-      color: white;
+  justify-content: center;
 
-      padding: 15px 25px;
+  background:
+    linear-gradient(
+      135deg,
+      #6d28d9,
+      #8b5cf6
+    );
 
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+  color: white;
 
-      gap: 15px;
+  font-size: 32px;
 
-      position: sticky;
-      top: 0;
+  font-weight: bold;
 
-      z-index: 20;
-    }
+  box-shadow:
+    0 12px 30px
+    rgba(109,40,217,.30);
+}
 
-    .topbar-brand {
-      font-size: 21px;
-      font-weight: bold;
-    }
+.logo h1 {
 
-    .topbar-brand span {
-      color: #a78bfa;
-    }
+  font-size: 28px;
 
-    .admin-info {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
+  color: #4c1d95;
+}
 
-    .admin-name {
-      font-size: 14px;
-      color: #ddd6fe;
-    }
+.logo p {
 
-    .logout-button {
-      border:
-        1px solid
-        rgba(255,255,255,.25);
+  margin-top: 5px;
 
-      background: transparent;
+  color: #6b7280;
 
-      color: white;
+  font-size: 14px;
+}
 
-      padding: 9px 14px;
+.field {
 
-      border-radius: 9px;
+  margin-bottom: 18px;
+}
 
-      cursor: pointer;
-    }
+.field label {
 
-    .logout-button:hover {
-      background:
-        rgba(255,255,255,.08);
-    }
+  display: block;
 
-    .container {
-      max-width: 1400px;
+  font-size: 14px;
 
-      margin: auto;
+  font-weight: bold;
 
-      padding: 30px 20px;
-    }
+  margin-bottom: 7px;
 
-    .page-title {
-      margin-bottom: 25px;
-    }
+  color: #374151;
+}
 
-    .page-title h2 {
-      font-size: 28px;
-      color: #2e1065;
-    }
+.field input {
 
-    .page-title p {
-      margin-top: 5px;
-      color: #6b7280;
-    }
+  width: 100%;
 
-    .cards {
-      display: grid;
+  padding: 14px 15px;
 
-      grid-template-columns:
-        repeat(4, 1fr);
+  border:
+    1px solid #d1d5db;
 
-      gap: 18px;
+  border-radius: 12px;
 
-      margin-bottom: 30px;
-    }
+  outline: none;
 
-    .card {
-      background: white;
+  transition: .2s;
+}
 
-      border-radius: 17px;
+.field input:focus {
 
-      padding: 22px;
+  border-color:
+    #7c3aed;
 
-      box-shadow:
-        0 4px 20px
-        rgba(0,0,0,.06);
+  box-shadow:
+    0 0 0 3px
+    rgba(124,58,237,.12);
+}
 
-      border:
-        1px solid #ede9fe;
-    }
+.login-button {
 
-    .card-label {
-      color: #6b7280;
+  width: 100%;
 
-      font-size: 13px;
+  border: 0;
 
-      margin-bottom: 8px;
-    }
+  padding: 15px;
 
-    .card-number {
-      font-size: 31px;
+  border-radius: 12px;
 
-      font-weight: bold;
+  background:
+    linear-gradient(
+      135deg,
+      #6d28d9,
+      #8b5cf6
+    );
 
-      color: #4c1d95;
-    }
+  color: white;
 
-    .section {
-      background: white;
+  font-weight: bold;
 
-      border-radius: 17px;
+  cursor: pointer;
 
-      padding: 22px;
+  transition: .2s;
 
-      margin-bottom: 22px;
+  margin-top: 4px;
+}
 
-      box-shadow:
-        0 4px 20px
-        rgba(0,0,0,.05);
+.login-button:hover {
 
-      border:
-        1px solid #ede9fe;
-    }
+  transform:
+    translateY(-1px);
 
-    .section h3 {
-      margin-bottom: 18px;
+  box-shadow:
+    0 10px 25px
+    rgba(109,40,217,.25);
+}
 
-      color: #2e1065;
-    }
+.login-button:disabled {
 
-    .loading {
-      color: #6b7280;
+  opacity: .6;
 
-      padding: 10px 0;
-    }
+  cursor: wait;
 
-    .status-message {
-      padding: 13px;
+  transform: none;
+}
 
-      border-radius: 10px;
+.error,
+.success {
 
-      background: #f3f4f6;
+  display: none;
 
-      color: #4b5563;
-    }
+  margin-bottom: 16px;
 
-    .table-wrapper {
-      overflow-x: auto;
-    }
+  padding: 12px;
 
-    table {
-      width: 100%;
+  border-radius: 10px;
 
-      border-collapse: collapse;
+  font-size: 14px;
+}
 
-      min-width: 650px;
-    }
+.error {
 
-    th,
-    td {
-      padding: 12px;
+  background: #fee2e2;
 
-      border-bottom:
-        1px solid #eee;
+  color: #991b1b;
+}
 
-      text-align: left;
+.success {
 
-      font-size: 14px;
-    }
+  background: #dcfce7;
 
-    th {
-      color: #6b7280;
+  color: #166534;
+}
 
-      font-size: 12px;
+/* ==================================================
+ADMIN
+================================================== */
 
-      text-transform: uppercase;
-    }
+#adminScreen {
 
-    .badge {
-      display: inline-block;
+  display: none;
 
-      padding: 5px 9px;
+  min-height: 100vh;
+}
 
-      border-radius: 20px;
+.topbar {
 
-      font-size: 12px;
+  background: #17112b;
 
-      font-weight: bold;
-    }
+  color: white;
 
-    .badge-green {
-      background: #dcfce7;
-      color: #166534;
-    }
+  padding:
+    15px 25px;
 
-    .badge-yellow {
-      background: #fef3c7;
-      color: #92400e;
-    }
+  display: flex;
 
-    .badge-red {
-      background: #fee2e2;
-      color: #991b1b;
-    }
+  justify-content:
+    space-between;
 
-    .confirm-button {
-      border: 0;
+  align-items: center;
 
-      padding: 8px 11px;
+  gap: 15px;
 
-      border-radius: 8px;
+  position: sticky;
 
-      background: #6d28d9;
+  top: 0;
 
-      color: white;
+  z-index: 20;
+}
 
-      cursor: pointer;
+.topbar-brand {
 
-      font-size: 12px;
+  font-size: 21px;
 
-      font-weight: bold;
-    }
+  font-weight: bold;
+}
 
-    .confirm-button:hover {
-      background: #5b21b6;
-    }
+.topbar-brand span {
 
-    .empty {
-      padding: 25px;
+  color: #a78bfa;
+}
 
-      text-align: center;
+.admin-info {
 
-      color: #9ca3af;
-    }
+  display: flex;
 
-    @media (max-width: 1000px) {
+  align-items: center;
 
-      .cards {
-        grid-template-columns:
-          repeat(2, 1fr);
-      }
+  gap: 15px;
+}
 
-    }
+.admin-name {
 
-    @media (max-width: 650px) {
+  font-size: 14px;
 
-      .topbar {
-        padding: 13px 15px;
-      }
+  color: #ddd6fe;
+}
 
-      .admin-name {
-        display: none;
-      }
+.logout-button {
 
-      .container {
-        padding: 20px 14px;
-      }
+  border:
+    1px solid
+    rgba(255,255,255,.25);
 
-      .cards {
-        grid-template-columns: 1fr;
-      }
+  background: transparent;
 
-      .login-card {
-        padding: 30px 22px;
-      }
+  color: white;
 
-      .page-title h2 {
-        font-size: 23px;
-      }
+  padding:
+    9px 14px;
 
-    }
+  border-radius: 9px;
 
-  </style>
+  cursor: pointer;
+}
+
+.logout-button:hover {
+
+  background:
+    rgba(255,255,255,.08);
+}
+
+.container {
+
+  max-width: 1400px;
+
+  margin: auto;
+
+  padding:
+    30px 20px;
+}
+
+.page-title {
+
+  margin-bottom: 25px;
+}
+
+.page-title h2 {
+
+  font-size: 28px;
+
+  color: #2e1065;
+}
+
+.page-title p {
+
+  margin-top: 5px;
+
+  color: #6b7280;
+}
+
+/* ==================================================
+CARDS
+================================================== */
+
+.cards {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, 1fr);
+
+  gap: 18px;
+
+  margin-bottom: 30px;
+}
+
+.card {
+
+  background: white;
+
+  border-radius: 17px;
+
+  padding: 22px;
+
+  box-shadow:
+    0 4px 20px
+    rgba(0,0,0,.06);
+
+  border:
+    1px solid #ede9fe;
+}
+
+.card-label {
+
+  color: #6b7280;
+
+  font-size: 13px;
+
+  margin-bottom: 8px;
+}
+
+.card-number {
+
+  font-size: 31px;
+
+  font-weight: bold;
+
+  color: #4c1d95;
+}
+
+/* ==================================================
+SECTIONS
+================================================== */
+
+.section {
+
+  background: white;
+
+  border-radius: 17px;
+
+  padding: 22px;
+
+  margin-bottom: 22px;
+
+  box-shadow:
+    0 4px 20px
+    rgba(0,0,0,.05);
+
+  border:
+    1px solid #ede9fe;
+}
+
+.section h3 {
+
+  margin-bottom: 18px;
+
+  color: #2e1065;
+}
+
+.table-wrapper {
+
+  overflow-x: auto;
+}
+
+table {
+
+  width: 100%;
+
+  border-collapse:
+    collapse;
+
+  min-width: 700px;
+}
+
+th,
+td {
+
+  padding: 12px;
+
+  border-bottom:
+    1px solid #eee;
+
+  text-align: left;
+
+  font-size: 14px;
+}
+
+th {
+
+  color: #6b7280;
+
+  font-size: 12px;
+
+  text-transform:
+    uppercase;
+}
+
+/* ==================================================
+BADGES
+================================================== */
+
+.badge {
+
+  display:
+    inline-block;
+
+  padding:
+    5px 9px;
+
+  border-radius: 20px;
+
+  font-size: 12px;
+
+  font-weight: bold;
+}
+
+.badge-green {
+
+  background:
+    #dcfce7;
+
+  color:
+    #166534;
+}
+
+.badge-yellow {
+
+  background:
+    #fef3c7;
+
+  color:
+    #92400e;
+}
+
+.badge-red {
+
+  background:
+    #fee2e2;
+
+  color:
+    #991b1b;
+}
+
+.badge-purple {
+
+  background:
+    #ede9fe;
+
+  color:
+    #5b21b6;
+}
+
+/* ==================================================
+BOTÕES
+================================================== */
+
+.action-button {
+
+  border: 0;
+
+  padding:
+    9px 12px;
+
+  border-radius: 9px;
+
+  color: white;
+
+  cursor: pointer;
+
+  font-size: 12px;
+
+  font-weight: bold;
+
+  transition: .2s;
+}
+
+.action-button:hover {
+
+  transform:
+    translateY(-1px);
+}
+
+.register-button {
+
+  background:
+    #2563eb;
+}
+
+.register-button:hover {
+
+  background:
+    #1d4ed8;
+}
+
+.confirm-button {
+
+  background:
+    #6d28d9;
+}
+
+.confirm-button:hover {
+
+  background:
+    #5b21b6;
+}
+
+.action-button:disabled {
+
+  opacity: .5;
+
+  cursor: not-allowed;
+
+  transform: none;
+}
+
+/* ==================================================
+EMPTY
+================================================== */
+
+.empty {
+
+  padding: 25px;
+
+  text-align: center;
+
+  color: #9ca3af;
+}
+
+.loading {
+
+  color:
+    #6b7280;
+
+  padding:
+    10px 0;
+}
+
+.status-message {
+
+  padding:
+    13px;
+
+  border-radius:
+    10px;
+
+  background:
+    #f3f4f6;
+
+  color:
+    #4b5563;
+}
+
+/* ==================================================
+MODAL
+================================================== */
+
+.modal {
+
+  position: fixed;
+
+  inset: 0;
+
+  background:
+    rgba(17,12,30,.65);
+
+  display: none;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 20px;
+
+  z-index: 100;
+}
+
+.modal.open {
+
+  display: flex;
+}
+
+.modal-box {
+
+  width: 100%;
+
+  max-width: 460px;
+
+  background: white;
+
+  border-radius: 20px;
+
+  padding: 28px;
+
+  box-shadow:
+    0 30px 80px
+    rgba(0,0,0,.35);
+}
+
+.modal-box h3 {
+
+  color:
+    #2e1065;
+
+  margin-bottom:
+    8px;
+}
+
+.modal-box p {
+
+  color:
+    #6b7280;
+
+  font-size:
+    14px;
+
+  line-height:
+    1.5;
+
+  margin-bottom:
+    20px;
+}
+
+.modal-actions {
+
+  display: flex;
+
+  gap: 10px;
+
+  justify-content: flex-end;
+}
+
+.modal-button {
+
+  border: 0;
+
+  padding:
+    11px 16px;
+
+  border-radius:
+    10px;
+
+  cursor: pointer;
+
+  font-weight: bold;
+}
+
+.modal-cancel {
+
+  background:
+    #f3f4f6;
+
+  color:
+    #374151;
+}
+
+.modal-confirm {
+
+  background:
+    #2563eb;
+
+  color: white;
+}
+
+/* ==================================================
+RESPONSIVO
+================================================== */
+
+@media (max-width: 1000px) {
+
+  .cards {
+
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+}
+
+@media (max-width: 650px) {
+
+  .topbar {
+
+    padding:
+      13px 15px;
+  }
+
+  .admin-name {
+
+    display: none;
+  }
+
+  .container {
+
+    padding:
+      20px 14px;
+  }
+
+  .cards {
+
+    grid-template-columns:
+      1fr;
+  }
+
+  .login-card {
+
+    padding:
+      30px 22px;
+  }
+
+  .page-title h2 {
+
+    font-size: 23px;
+  }
+
+}
+
+</style>
+
 </head>
 
 <body>
 
-  <!-- =========================
-       LOGIN
-  ========================== -->
 
-  <section id="loginScreen">
+<!-- ==================================================
+LOGIN
+================================================== -->
 
-    <div class="login-card">
+<section id="loginScreen">
 
-      <div class="logo">
+  <div class="login-card">
 
-        <div class="logo-icon">
-          +
-        </div>
+    <div class="logo">
 
-        <h1>Indica+</h1>
-
-        <p>Painel Administrativo</p>
-
+      <div class="logo-icon">
+        +
       </div>
 
-      <div
-        id="loginError"
-        class="error">
-      </div>
+      <h1>
+        Indica+
+      </h1>
 
-      <div
-        id="loginSuccess"
-        class="success">
-      </div>
-
-      <form id="loginForm">
-
-        <div class="field">
-
-          <label for="email">
-            E-mail
-          </label>
-
-          <input
-            type="email"
-            id="email"
-            autocomplete="username"
-            placeholder="Digite seu e-mail"
-            required
-          >
-
-        </div>
-
-        <div class="field">
-
-          <label for="password">
-            Senha
-          </label>
-
-          <input
-            type="password"
-            id="password"
-            autocomplete="current-password"
-            placeholder="Digite sua senha"
-            required
-          >
-
-        </div>
-
-        <button
-          type="submit"
-          class="login-button"
-          id="loginButton"
-        >
-          Entrar no painel
-        </button>
-
-      </form>
+      <p>
+        Painel Administrativo
+      </p>
 
     </div>
 
-  </section>
+
+    <div
+      id="loginError"
+      class="error">
+    </div>
 
 
-  <!-- =========================
-       ADMIN
-  ========================== -->
+    <div
+      id="loginSuccess"
+      class="success">
+    </div>
 
-  <section id="adminScreen">
 
-    <header class="topbar">
+    <form id="loginForm">
 
-      <div class="topbar-brand">
-        Indica<span>+</span>
-      </div>
+      <div class="field">
 
-      <div class="admin-info">
+        <label>
+          E-mail
+        </label>
 
-        <span
-          class="admin-name"
-          id="adminName"
+        <input
+          type="email"
+          id="email"
+          autocomplete="username"
+          placeholder="Digite seu e-mail"
+          required
         >
-          Administrador
-        </span>
 
-        <button
-          class="logout-button"
-          id="logoutButton"
+      </div>
+
+
+      <div class="field">
+
+        <label>
+          Senha
+        </label>
+
+        <input
+          type="password"
+          id="password"
+          autocomplete="current-password"
+          placeholder="Digite sua senha"
+          required
         >
-          Sair
-        </button>
-
-      </div>
-
-    </header>
-
-
-    <main class="container">
-
-      <div class="page-title">
-
-        <h2>
-          Dashboard
-        </h2>
-
-        <p>
-          Visão geral da campanha e das indicações.
-        </p>
 
       </div>
 
 
-      <div class="cards">
+      <button
+        type="submit"
+        class="login-button"
+        id="loginButton"
+      >
+        Entrar no painel
+      </button>
 
-        <div class="card">
+    </form>
 
-          <div class="card-label">
-            Alunos
-          </div>
+  </div>
 
-          <div
-            class="card-number"
-            id="studentsCount"
-          >
-            0
-          </div>
-
-        </div>
+</section>
 
 
-        <div class="card">
+<!-- ==================================================
+ADMIN
+================================================== -->
 
-          <div class="card-label">
-            Indicações
-          </div>
-
-          <div
-            class="card-number"
-            id="referralsCount"
-          >
-            0
-          </div>
-
-        </div>
+<section id="adminScreen">
 
 
-        <div class="card">
+<header class="topbar">
 
-          <div class="card-label">
-            Aguardando 7 dias
-          </div>
+  <div class="topbar-brand">
 
-          <div
-            class="card-number"
-            id="waitingCount"
-          >
-            0
-          </div>
+    Indica<span>+</span>
 
-        </div>
+  </div>
 
 
-        <div class="card">
+  <div class="admin-info">
 
-          <div class="card-label">
-            Tickets disponíveis
-          </div>
-
-          <div
-            class="card-number"
-            id="ticketsCount"
-          >
-            0
-          </div>
-
-        </div>
-
-      </div>
+    <span
+      class="admin-name"
+      id="adminName"
+    >
+      Administrador
+    </span>
 
 
-      <section class="section">
+    <button
+      class="logout-button"
+      id="logoutButton"
+    >
+      Sair
+    </button>
 
-        <h3>
-          Matrículas aguardando confirmação
-        </h3>
+  </div>
 
-        <div id="enrollmentsArea">
-
-          <div class="loading">
-            Carregando...
-          </div>
-
-        </div>
-
-      </section>
+</header>
 
 
-      <section class="section">
-
-        <h3>
-          Últimas indicações
-        </h3>
-
-        <div id="referralsArea">
-
-          <div class="loading">
-            Carregando...
-          </div>
-
-        </div>
-
-      </section>
+<main class="container">
 
 
-      <section class="section">
+<div class="page-title">
 
-        <h3>
-          Tickets disponíveis
-        </h3>
+  <h2>
+    Dashboard
+  </h2>
 
-        <div id="ticketsArea">
+  <p>
+    Visão geral da campanha e das indicações.
+  </p>
 
-          <div class="loading">
-            Carregando...
-          </div>
-
-        </div>
-
-      </section>
+</div>
 
 
-      <section class="section">
+<!-- ==================================================
+CARDS
+================================================== -->
 
-        <h3>
-          Prêmios
-        </h3>
+<div class="cards">
 
-        <div id="prizesArea">
 
-          <div class="loading">
-            Carregando...
-          </div>
+<div class="card">
 
-        </div>
+  <div class="card-label">
+    Alunos
+  </div>
 
-      </section>
+  <div
+    class="card-number"
+    id="studentsCount"
+  >
+    0
+  </div>
 
-    </main>
+</div>
 
-  </section>
+
+<div class="card">
+
+  <div class="card-label">
+    Indicações
+  </div>
+
+  <div
+    class="card-number"
+    id="referralsCount"
+  >
+    0
+  </div>
+
+</div>
+
+
+<div class="card">
+
+  <div class="card-label">
+    Aguardando 7 dias
+  </div>
+
+  <div
+    class="card-number"
+    id="waitingCount"
+  >
+    0
+  </div>
+
+</div>
+
+
+<div class="card">
+
+  <div class="card-label">
+    Tickets disponíveis
+  </div>
+
+  <div
+    class="card-number"
+    id="ticketsCount"
+  >
+    0
+  </div>
+
+</div>
+
+
+</div>
+
+
+<!-- ==================================================
+MATRÍCULAS
+================================================== -->
+
+<section class="section">
+
+<h3>
+  Matrículas aguardando confirmação
+</h3>
+
+
+<div id="enrollmentsArea">
+
+  <div class="loading">
+    Carregando...
+  </div>
+
+</div>
+
+</section>
+
+
+<!-- ==================================================
+INDICAÇÕES
+================================================== -->
+
+<section class="section">
+
+<h3>
+  Últimas indicações
+</h3>
+
+
+<div id="referralsArea">
+
+  <div class="loading">
+    Carregando...
+  </div>
+
+</div>
+
+</section>
+
+
+<!-- ==================================================
+TICKETS
+================================================== -->
+
+<section class="section">
+
+<h3>
+  Tickets disponíveis
+</h3>
+
+
+<div id="ticketsArea">
+
+  <div class="loading">
+    Carregando...
+  </div>
+
+</div>
+
+</section>
+
+
+<!-- ==================================================
+PRÊMIOS
+================================================== -->
+
+<section class="section">
+
+<h3>
+  Prêmios
+</h3>
+
+
+<div id="prizesArea">
+
+  <div class="loading">
+    Carregando...
+  </div>
+
+</div>
+
+</section>
+
+
+</main>
+
+</section>
+
+
+<!-- ==================================================
+MODAL MATRÍCULA
+================================================== -->
+
+<div
+  class="modal"
+  id="enrollmentModal"
+>
+
+<div class="modal-box">
+
+  <h3>
+    Registrar matrícula
+  </h3>
+
+  <p id="enrollmentText">
+    Confirmar matrícula?
+  </p>
+
+
+  <div class="modal-actions">
+
+    <button
+      class="modal-button modal-cancel"
+      id="cancelEnrollment"
+    >
+      Cancelar
+    </button>
+
+
+    <button
+      class="modal-button modal-confirm"
+      id="confirmRegisterEnrollment"
+    >
+      Confirmar matrícula
+    </button>
+
+  </div>
+
+</div>
+
+</div>
 
 
 <script>
 
-  /* =========================================
-     API
-  ========================================= */
-
-  const API_URL =
-    "https://indica-mais-api.evoluamaisprofissoes.workers.dev";
-
-
-  /* =========================================
-     ELEMENTOS
-  ========================================= */
-
-  const loginScreen =
-    document.getElementById(
-      "loginScreen"
-    );
-
-  const adminScreen =
-    document.getElementById(
-      "adminScreen"
-    );
-
-  const loginForm =
-    document.getElementById(
-      "loginForm"
-    );
-
-  const loginButton =
-    document.getElementById(
-      "loginButton"
-    );
-
-  const loginError =
-    document.getElementById(
-      "loginError"
-    );
-
-  const loginSuccess =
-    document.getElementById(
-      "loginSuccess"
-    );
-
-  const logoutButton =
-    document.getElementById(
-      "logoutButton"
-    );
-
-
-  /* =========================================
-     TOKEN
-  ========================================= */
-
-  function getToken() {
-
-    return localStorage.getItem(
-      "indica_admin_token"
-    );
-
-  }
-
-
-  function saveToken(token) {
-
-    localStorage.setItem(
-      "indica_admin_token",
-      token
-    );
-
-  }
-
-
-  function clearToken() {
-
-    localStorage.removeItem(
-      "indica_admin_token"
-    );
-
-  }
-
-
-  /* =========================================
-     API
-  ========================================= */
-
-  async function api(
-    endpoint,
-    options = {}
-  ) {
-
-    const token =
-      getToken();
-
-    const headers = {
-
-      "Content-Type":
-        "application/json",
-
-      ...(options.headers || {})
-
-    };
-
-
-    if (token) {
-
-      headers.Authorization =
-        "Bearer " + token;
-
-    }
-
-
-    const response =
-      await fetch(
-        API_URL + endpoint,
-        {
-          ...options,
-          headers
-        }
-      );
-
-
-    let data = {};
-
-    try {
-
-      data =
-        await response.json();
-
-    } catch {
-
-      data = {};
-
-    }
-
-
-    if (!response.ok) {
-
-      throw new Error(
-        data.error ||
-        data.message ||
-        "Erro na comunicação com a API."
-      );
-
-    }
-
-
-    return data;
-
-  }
-
-
-  /* =========================================
-     LOGIN
-  ========================================= */
-
-  loginForm.addEventListener(
-    "submit",
-    async function(event) {
-
-      event.preventDefault();
-
-
-      loginError.style.display =
-        "none";
-
-      loginSuccess.style.display =
-        "none";
-
-
-      const email =
-        document
-          .getElementById("email")
-          .value
-          .trim();
-
-      const password =
-        document
-          .getElementById("password")
-          .value;
-
-
-      loginButton.disabled =
-        true;
-
-      loginButton.textContent =
-        "Entrando...";
-
-
-      try {
-
-        const response =
-          await fetch(
-            API_URL +
-            "/api/admin/login",
-            {
-              method: "POST",
-
-              headers: {
-                "Content-Type":
-                  "application/json"
-              },
-
-              body: JSON.stringify({
-                email,
-                password
-              })
-            }
-          );
-
-
-        const data =
-          await response.json();
-
-
-        if (!response.ok) {
-
-          throw new Error(
-            data.error ||
-            data.message ||
-            "E-mail ou senha inválidos."
-          );
-
-        }
-
-
-        const token =
-          data.token ||
-          data.session?.token ||
-          data.data?.token;
-
-
-        if (!token) {
-
-          throw new Error(
-            "A API não retornou o token da sessão."
-          );
-
-        }
-
-
-        saveToken(token);
-
-
-        loginSuccess.textContent =
-          "Login realizado com sucesso!";
-
-        loginSuccess.style.display =
-          "block";
-
-
-        setTimeout(
-          () => {
-
-            showAdmin(
-              data.admin ||
-              data.user
-            );
-
-          },
-          300
-        );
-
-
-      } catch (error) {
-
-        console.error(error);
-
-        loginError.textContent =
-          error.message ||
-          "Não foi possível realizar o login.";
-
-        loginError.style.display =
-          "block";
-
-
-      } finally {
-
-        loginButton.disabled =
-          false;
-
-        loginButton.textContent =
-          "Entrar no painel";
-
-      }
-
-    }
+/* ==================================================
+CONFIGURAÇÃO
+================================================== */
+
+const API_URL =
+  "https://indica-mais-api.evoluamaisprofissoes.workers.dev";
+
+
+/* ==================================================
+ELEMENTOS
+================================================== */
+
+const loginScreen =
+  document.getElementById(
+    "loginScreen"
+  );
+
+const adminScreen =
+  document.getElementById(
+    "adminScreen"
+  );
+
+const loginForm =
+  document.getElementById(
+    "loginForm"
+  );
+
+const loginButton =
+  document.getElementById(
+    "loginButton"
+  );
+
+const loginError =
+  document.getElementById(
+    "loginError"
+  );
+
+const loginSuccess =
+  document.getElementById(
+    "loginSuccess"
+  );
+
+const logoutButton =
+  document.getElementById(
+    "logoutButton"
   );
 
 
-  /* =========================================
-     SESSÃO
-  ========================================= */
+const enrollmentModal =
+  document.getElementById(
+    "enrollmentModal"
+  );
 
-  async function checkSession() {
+const enrollmentText =
+  document.getElementById(
+    "enrollmentText"
+  );
 
-    const token =
-      getToken();
+const cancelEnrollment =
+  document.getElementById(
+    "cancelEnrollment"
+  );
+
+const confirmRegisterEnrollment =
+  document.getElementById(
+    "confirmRegisterEnrollment"
+  );
 
 
-    if (!token) {
+let selectedReferralId =
+  null;
 
-      showLogin();
 
-      return;
+/* ==================================================
+TOKEN
+================================================== */
 
-    }
+function getToken() {
+
+  return localStorage.getItem(
+    "indica_admin_token"
+  );
+
+}
+
+
+function saveToken(
+  token
+) {
+
+  localStorage.setItem(
+    "indica_admin_token",
+    token
+  );
+
+}
+
+
+function clearToken() {
+
+  localStorage.removeItem(
+    "indica_admin_token"
+  );
+
+}
+
+
+/* ==================================================
+API
+================================================== */
+
+async function api(
+  endpoint,
+  options = {}
+) {
+
+  const token =
+    getToken();
+
+
+  const headers = {
+
+    "Content-Type":
+      "application/json",
+
+    ...(options.headers || {})
+
+  };
+
+
+  if (token) {
+
+    headers.Authorization =
+      "Bearer " + token;
+
+  }
+
+
+  const response =
+    await fetch(
+      API_URL + endpoint,
+      {
+        ...options,
+        headers
+      }
+    );
+
+
+  let data = {};
+
+
+  try {
+
+    data =
+      await response.json();
+
+  } catch {
+
+    data = {};
+
+  }
+
+
+  if (!response.ok) {
+
+    throw new Error(
+      data.error ||
+      data.message ||
+      "Erro na comunicação com a API."
+    );
+
+  }
+
+
+  return data;
+
+}
+
+
+/* ==================================================
+LOGIN
+================================================== */
+
+loginForm.addEventListener(
+  "submit",
+  async function(event) {
+
+    event.preventDefault();
+
+
+    loginError.style.display =
+      "none";
+
+    loginSuccess.style.display =
+      "none";
+
+
+    const email =
+      document
+        .getElementById("email")
+        .value
+        .trim();
+
+
+    const password =
+      document
+        .getElementById("password")
+        .value;
+
+
+    loginButton.disabled =
+      true;
+
+    loginButton.textContent =
+      "Entrando...";
 
 
     try {
 
       const response =
-        await api(
-          "/api/admin/me"
+        await fetch(
+          API_URL +
+          "/api/admin/login",
+          {
+
+            method:
+              "POST",
+
+            headers: {
+
+              "Content-Type":
+                "application/json"
+
+            },
+
+            body:
+              JSON.stringify({
+
+                email,
+
+                password
+
+              })
+
+          }
         );
 
 
-      if (
-        response.success === false
-      ) {
+      const data =
+        await response.json();
+
+
+      if (!response.ok) {
 
         throw new Error(
-          "Sessão inválida."
+          data.error ||
+          "E-mail ou senha inválidos."
         );
 
       }
 
 
-      showAdmin(
-        response.admin ||
-        response.user
+      const token =
+        data.token;
+
+
+      if (!token) {
+
+        throw new Error(
+          "A API não retornou o token."
+        );
+
+      }
+
+
+      saveToken(
+        token
       );
 
 
-    } catch {
-
-      clearToken();
-
-      showLogin();
-
-    }
-
-  }
+      loginSuccess.textContent =
+        "Login realizado com sucesso!";
 
 
-  /* =========================================
-     LOGIN SCREEN
-  ========================================= */
-
-  function showLogin() {
-
-    loginScreen.style.display =
-      "flex";
-
-    adminScreen.style.display =
-      "none";
-
-  }
+      loginSuccess.style.display =
+        "block";
 
 
-  /* =========================================
-     ADMIN SCREEN
-  ========================================= */
+      setTimeout(
+        () => {
 
-  async function showAdmin(
-    admin = null
-  ) {
+          showAdmin(
+            data.admin
+          );
 
-    loginScreen.style.display =
-      "none";
-
-    adminScreen.style.display =
-      "block";
-
-
-    if (admin) {
-
-      document.getElementById(
-        "adminName"
-      ).textContent =
-        admin.name ||
-        admin.email ||
-        "Administrador";
-
-    }
-
-
-    await loadDashboard();
-
-  }
-
-
-  /* =========================================
-     DASHBOARD
-  ========================================= */
-
-  async function loadDashboard() {
-
-    try {
-
-      const data =
-        await api(
-          "/api/admin/dashboard"
-        );
-
-
-      const dashboard =
-        data.dashboard ||
-        data.data ||
-        data;
-
-
-      document.getElementById(
-        "studentsCount"
-      ).textContent =
-        dashboard.students || 0;
-
-
-      document.getElementById(
-        "referralsCount"
-      ).textContent =
-        dashboard.referrals || 0;
-
-
-      document.getElementById(
-        "waitingCount"
-      ).textContent =
-        dashboard.waiting_7_days || 0;
-
-
-      document.getElementById(
-        "ticketsCount"
-      ).textContent =
-        dashboard.available_tickets || 0;
-
-
-      await Promise.all([
-        loadEnrollments(),
-        loadReferrals(),
-        loadTickets(),
-        loadPrizes()
-      ]);
+        },
+        250
+      );
 
 
     } catch (error) {
 
       console.error(error);
 
-      document.getElementById(
-        "enrollmentsArea"
-      ).innerHTML =
-        `<div class="status-message">
-          Erro ao carregar o painel.
-        </div>`;
+
+      loginError.textContent =
+        error.message ||
+        "Não foi possível realizar o login.";
+
+
+      loginError.style.display =
+        "block";
+
+
+    } finally {
+
+      loginButton.disabled =
+        false;
+
+      loginButton.textContent =
+        "Entrar no painel";
 
     }
 
   }
+);
 
 
-  /* =========================================
-     MATRÍCULAS
-  ========================================= */
+/* ==================================================
+SESSÃO
+================================================== */
 
-  async function loadEnrollments() {
+async function checkSession() {
 
-    const area =
-      document.getElementById(
-        "enrollmentsArea"
+  const token =
+    getToken();
+
+
+  if (!token) {
+
+    showLogin();
+
+    return;
+
+  }
+
+
+  try {
+
+    const data =
+      await api(
+        "/api/admin/me"
       );
 
 
-    try {
-
-      const data =
-        await api(
-          "/api/admin/enrollments"
-        );
+    showAdmin(
+      data.admin
+    );
 
 
-      const items =
-        data.enrollments ||
-        data.results ||
-        data.data ||
-        [];
+  } catch {
+
+    clearToken();
+
+    showLogin();
+
+  }
+
+}
 
 
-      if (!items.length) {
+/* ==================================================
+TELAS
+================================================== */
 
-        area.innerHTML =
-          `<div class="empty">
-            Nenhuma matrícula encontrada.
-          </div>`;
+function showLogin() {
 
-        return;
+  loginScreen.style.display =
+    "flex";
 
-      }
+  adminScreen.style.display =
+    "none";
+
+}
 
 
-      let html = `
-        <div class="table-wrapper">
+async function showAdmin(
+  admin
+) {
 
-        <table>
+  loginScreen.style.display =
+    "none";
 
-          <thead>
+  adminScreen.style.display =
+    "block";
 
-            <tr>
 
-              <th>
-                Aluno
-              </th>
+  document.getElementById(
+    "adminName"
+  ).textContent =
+    admin?.name ||
+    admin?.email ||
+    "Administrador";
 
-              <th>
-                Status
-              </th>
 
-              <th>
-                Elegível em
-              </th>
+  await loadDashboard();
 
-              <th>
-                Ação
-              </th>
+}
 
-            </tr>
 
-          </thead>
+/* ==================================================
+DASHBOARD
+================================================== */
 
-          <tbody>
+async function loadDashboard() {
+
+  try {
+
+    const data =
+      await api(
+        "/api/admin/dashboard"
+      );
+
+
+    const d =
+      data.dashboard ||
+      {};
+
+
+    document.getElementById(
+      "studentsCount"
+    ).textContent =
+      d.students || 0;
+
+
+    document.getElementById(
+      "referralsCount"
+    ).textContent =
+      d.referrals || 0;
+
+
+    document.getElementById(
+      "waitingCount"
+    ).textContent =
+      d.waiting_7_days || 0;
+
+
+    document.getElementById(
+      "ticketsCount"
+    ).textContent =
+      d.available_tickets || 0;
+
+
+    await Promise.all([
+
+      loadEnrollments(),
+
+      loadReferrals(),
+
+      loadTickets(),
+
+      loadPrizes()
+
+    ]);
+
+
+  } catch (error) {
+
+    console.error(error);
+
+
+    document.getElementById(
+      "enrollmentsArea"
+    ).innerHTML =
+      `
+      <div class="status-message">
+
+        Erro ao carregar o painel.
+
+      </div>
       `;
 
+  }
 
-      items.forEach(
+}
+
+
+/* ==================================================
+MATRÍCULAS
+================================================== */
+
+async function loadEnrollments() {
+
+  const area =
+    document.getElementById(
+      "enrollmentsArea"
+    );
+
+
+  try {
+
+    const data =
+      await api(
+        "/api/admin/enrollments"
+      );
+
+
+    const items =
+      data.enrollments ||
+      [];
+
+
+    if (!items.length) {
+
+      area.innerHTML =
+        `
+        <div class="empty">
+
+          Nenhuma matrícula encontrada.
+
+        </div>
+        `;
+
+      return;
+
+    }
+
+
+    let html = `
+
+      <div class="table-wrapper">
+
+      <table>
+
+      <thead>
+
+      <tr>
+
+        <th>
+          Indicado
+        </th>
+
+        <th>
+          Indicador
+        </th>
+
+        <th>
+          Status
+        </th>
+
+        <th>
+          Elegível em
+        </th>
+
+        <th>
+          Ação
+        </th>
+
+      </tr>
+
+      </thead>
+
+      <tbody>
+
+    `;
+
+
+    items.forEach(
+      item => {
+
+        const status =
+          item.enrollment_status ||
+          "";
+
+
+        const eligibleDate =
+          item.eligible_at
+            ? new Date(
+                item.eligible_at
+              )
+                .toLocaleDateString(
+                  "pt-BR"
+                )
+            : "-";
+
+
+        const eligibleTime =
+          item.eligible_at
+            ? new Date(
+                item.eligible_at
+              ).getTime()
+            : 0;
+
+
+        const canConfirm =
+          status ===
+            "paid_waiting" &&
+          eligibleTime <=
+            Date.now();
+
+
+        let statusClass =
+          "badge-yellow";
+
+
+        let statusText =
+          "AGUARDANDO 7 DIAS";
+
+
+        if (
+          status ===
+          "confirmed"
+        ) {
+
+          statusClass =
+            "badge-green";
+
+          statusText =
+            "CONFIRMADA";
+
+        }
+
+
+        if (
+          status ===
+          "cancelled" ||
+          status ===
+          "refunded"
+        ) {
+
+          statusClass =
+            "badge-red";
+
+          statusText =
+            status.toUpperCase();
+
+        }
+
+
+        html += `
+
+          <tr>
+
+            <td>
+
+              <strong>
+
+                ${escapeHtml(
+                  item.lead_name ||
+                  "-"
+                )}
+
+              </strong>
+
+              <br>
+
+              <small>
+
+                ${escapeHtml(
+                  item.lead_whatsapp ||
+                  ""
+                )}
+
+              </small>
+
+            </td>
+
+
+            <td>
+
+              ${escapeHtml(
+                item.indicator_name ||
+                "-"
+              )}
+
+              <br>
+
+              <small>
+
+                ${escapeHtml(
+                  item.indicator_whatsapp ||
+                  ""
+                )}
+
+              </small>
+
+            </td>
+
+
+            <td>
+
+              <span
+                class="badge ${statusClass}"
+              >
+
+                ${statusText}
+
+              </span>
+
+            </td>
+
+
+            <td>
+
+              ${eligibleDate}
+
+            </td>
+
+
+            <td>
+
+              ${
+                canConfirm
+
+                ?
+
+                `
+                <button
+
+                  class="
+                    action-button
+                    confirm-button
+                  "
+
+                  onclick="
+                    confirmEnrollment(
+                      '${item.id}'
+                    )
+                  "
+
+                >
+
+                  Gerar ticket
+
+                </button>
+                `
+
+                :
+
+                status ===
+                  "paid_waiting"
+
+                ?
+
+                `
+                <span
+                  class="
+                    badge
+                    badge-purple
+                  "
+                >
+
+                  Aguardando
+
+                </span>
+                `
+
+                :
+
+                "-"
+              }
+
+            </td>
+
+          </tr>
+
+        `;
+
+      }
+    );
+
+
+    html += `
+
+      </tbody>
+
+      </table>
+
+      </div>
+
+    `;
+
+
+    area.innerHTML =
+      html;
+
+
+  } catch (error) {
+
+    console.error(error);
+
+
+    area.innerHTML =
+      `
+      <div class="status-message">
+
+        Não foi possível carregar as matrículas.
+
+      </div>
+      `;
+
+  }
+
+}
+
+
+/* ==================================================
+CONFIRMAR MATRÍCULA
+================================================== */
+
+async function confirmEnrollment(
+  enrollmentId
+) {
+
+  if (
+    !confirm(
+      "Confirmar esta matrícula e gerar o ticket?"
+    )
+  ) {
+
+    return;
+
+  }
+
+
+  try {
+
+    const data =
+      await api(
+        "/api/admin/enrollments/" +
+        enrollmentId +
+        "/confirm",
+        {
+          method:
+            "POST"
+        }
+      );
+
+
+    alert(
+      data.message ||
+      "Ticket gerado com sucesso."
+    );
+
+
+    await loadDashboard();
+
+
+  } catch (error) {
+
+    alert(
+      error.message ||
+      "Não foi possível confirmar."
+    );
+
+  }
+
+}
+
+
+/* ==================================================
+INDICAÇÕES
+================================================== */
+
+async function loadReferrals() {
+
+  const area =
+    document.getElementById(
+      "referralsArea"
+    );
+
+
+  try {
+
+    const data =
+      await api(
+        "/api/admin/referrals"
+      );
+
+
+    const items =
+      data.referrals ||
+      [];
+
+
+    if (!items.length) {
+
+      area.innerHTML =
+        `
+        <div class="empty">
+
+          Nenhuma indicação encontrada.
+
+        </div>
+        `;
+
+      return;
+
+    }
+
+
+    let html = `
+
+      <div class="table-wrapper">
+
+      <table>
+
+      <thead>
+
+      <tr>
+
+        <th>
+          Lead
+        </th>
+
+        <th>
+          WhatsApp
+        </th>
+
+        <th>
+          Indicador
+        </th>
+
+        <th>
+          Status
+        </th>
+
+        <th>
+          Data
+        </th>
+
+        <th>
+          Ação
+        </th>
+
+      </tr>
+
+      </thead>
+
+      <tbody>
+
+    `;
+
+
+    items
+      .slice(0, 50)
+      .forEach(
         item => {
 
           const status =
-            item.enrollment_status ||
             item.status ||
-            "";
+            "pending";
 
 
-          const eligibleAt =
-            item.eligible_at
-              ? new Date(
-                  item.eligible_at
-                ).toLocaleDateString(
-                  "pt-BR"
-                )
-              : "-";
-
-
-          const canConfirm =
+          const statusClass =
             status ===
-              "paid_waiting" ||
+              "confirmed"
+
+              ? "badge-green"
+
+              : status ===
+                "cancelled"
+
+              ? "badge-red"
+
+              : "badge-yellow";
+
+
+          const statusText =
             status ===
-              "eligible";
+              "confirmed"
+
+              ? "CONFIRMADA"
+
+              : status ===
+                "cancelled"
+
+              ? "CANCELADA"
+
+              : "PENDENTE";
 
 
           html += `
+
             <tr>
 
               <td>
-                ${escapeHtml(
-                  item.lead_name ||
-                  item.name ||
-                  "-"
-                )}
+
+                <strong>
+
+                  ${escapeHtml(
+                    item.lead_name ||
+                    "-"
+                  )}
+
+                </strong>
+
               </td>
+
 
               <td>
 
-                <span class="badge ${
-                  canConfirm
-                    ? "badge-yellow"
-                    : status ===
-                      "confirmed"
-                      ? "badge-green"
-                      : "badge-red"
-                }">
+                ${escapeHtml(
+                  item.lead_whatsapp ||
+                  "-"
+                )}
 
-                  ${escapeHtml(
-                    status
-                  )}
+              </td>
+
+
+              <td>
+
+                ${escapeHtml(
+                  item.student_name ||
+                  "-"
+                )}
+
+              </td>
+
+
+              <td>
+
+                <span
+                  class="badge ${statusClass}"
+                >
+
+                  ${statusText}
 
                 </span>
 
               </td>
 
-              <td>
-                ${eligibleAt}
-              </td>
 
               <td>
 
                 ${
-                  canConfirm
+                  item.created_at
 
-                    ? `
-                      <button
-                        class="confirm-button"
-                        onclick="
-                          confirmEnrollment(
-                            '${item.id}'
-                          )
-                        "
-                      >
-                        Confirmar
-                      </button>
-                    `
+                    ? new Date(
+                        item.created_at
+                      )
+                      .toLocaleDateString(
+                        "pt-BR"
+                      )
 
                     : "-"
                 }
 
               </td>
 
+
+              <td>
+
+                ${
+                  status ===
+                  "pending"
+
+                    ?
+
+                    `
+                    <button
+
+                      class="
+                        action-button
+                        register-button
+                      "
+
+                      onclick="
+                        openEnrollmentModal(
+                          '${item.id}',
+                          '${escapeJs(
+                            item.lead_name ||
+                            "este indicado"
+                          )}'
+                        )
+                      "
+
+                    >
+
+                      Registrar matrícula
+
+                    </button>
+                    `
+
+                    :
+
+                    "-"
+                }
+
+              </td>
+
             </tr>
+
           `;
 
         }
       );
 
 
-      html += `
-          </tbody>
+    html += `
 
-        </table>
+      </tbody>
 
-        </div>
+      </table>
+
+      </div>
+
+    `;
+
+
+    area.innerHTML =
+      html;
+
+
+  } catch (error) {
+
+    console.error(error);
+
+
+    area.innerHTML =
+      `
+      <div class="status-message">
+
+        Não foi possível carregar as indicações.
+
+      </div>
       `;
-
-
-      area.innerHTML =
-        html;
-
-
-    } catch (error) {
-
-      console.error(error);
-
-      area.innerHTML =
-        `<div class="status-message">
-          Não foi possível carregar as matrículas.
-        </div>`;
-
-    }
 
   }
 
+}
 
-  /* =========================================
-     CONFIRMAR MATRÍCULA
-  ========================================= */
 
-  async function confirmEnrollment(
-    id
-  ) {
+/* ==================================================
+ABRIR MODAL MATRÍCULA
+================================================== */
 
-    if (
-      !confirm(
-        "Confirmar esta matrícula e gerar o ticket?"
-      )
-    ) {
+function openEnrollmentModal(
+  referralId,
+  leadName
+) {
+
+  selectedReferralId =
+    referralId;
+
+
+  enrollmentText.innerHTML =
+    `
+
+      Você está registrando uma matrícula paga para:
+
+      <br><br>
+
+      <strong>
+        ${escapeHtml(
+          leadName
+        )}
+      </strong>
+
+      <br><br>
+
+      Os 7 dias de segurança começarão
+      a contar a partir deste momento.
+
+    `;
+
+
+  enrollmentModal.classList.add(
+    "open"
+  );
+
+}
+
+
+/* ==================================================
+FECHAR MODAL
+================================================== */
+
+cancelEnrollment.onclick =
+  function() {
+
+    selectedReferralId =
+      null;
+
+    enrollmentModal.classList.remove(
+      "open"
+    );
+
+  };
+
+
+/* ==================================================
+CONFIRMAR REGISTRO DA MATRÍCULA
+================================================== */
+
+confirmRegisterEnrollment.onclick =
+  async function() {
+
+    if (!selectedReferralId) {
 
       return;
 
     }
 
 
+    confirmRegisterEnrollment.disabled =
+      true;
+
+
+    confirmRegisterEnrollment.textContent =
+      "Registrando...";
+
+
     try {
 
       const data =
         await api(
-          "/api/admin/enrollments/" +
-          id +
-          "/confirm",
+          "/api/admin/enrollments",
           {
-            method: "POST"
+
+            method:
+              "POST",
+
+            body:
+              JSON.stringify({
+
+                referral_id:
+                  selectedReferralId
+
+              })
+
           }
         );
 
 
+      enrollmentModal.classList.remove(
+        "open"
+      );
+
+
+      selectedReferralId =
+        null;
+
+
       alert(
         data.message ||
-        "Matrícula confirmada e ticket gerado."
+        "Matrícula registrada."
       );
 
 
@@ -1471,531 +2435,485 @@
 
       alert(
         error.message ||
-        "Não foi possível confirmar a matrícula."
+        "Não foi possível registrar a matrícula."
       );
+
+
+    } finally {
+
+      confirmRegisterEnrollment.disabled =
+        false;
+
+      confirmRegisterEnrollment.textContent =
+        "Confirmar matrícula";
 
     }
 
-  }
+  };
 
 
-  /* =========================================
-     INDICAÇÕES
-  ========================================= */
+/* ==================================================
+TICKETS
+================================================== */
 
-  async function loadReferrals() {
+async function loadTickets() {
 
-    const area =
-      document.getElementById(
-        "referralsArea"
+  const area =
+    document.getElementById(
+      "ticketsArea"
+    );
+
+
+  try {
+
+    const data =
+      await api(
+        "/api/admin/tickets"
       );
 
 
-    try {
-
-      const data =
-        await api(
-          "/api/admin/referrals"
-        );
+    const items =
+      data.tickets ||
+      [];
 
 
-      const items =
-        data.referrals ||
-        data.results ||
-        data.data ||
-        [];
+    if (!items.length) {
 
+      area.innerHTML =
+        `
+        <div class="empty">
 
-      if (!items.length) {
-
-        area.innerHTML =
-          `<div class="empty">
-            Nenhuma indicação encontrada.
-          </div>`;
-
-        return;
-
-      }
-
-
-      let html = `
-        <div class="table-wrapper">
-
-        <table>
-
-          <thead>
-
-            <tr>
-
-              <th>
-                Lead
-              </th>
-
-              <th>
-                WhatsApp
-              </th>
-
-              <th>
-                Status
-              </th>
-
-              <th>
-                Data
-              </th>
-
-            </tr>
-
-          </thead>
-
-          <tbody>
-      `;
-
-
-      items
-        .slice(0, 30)
-        .forEach(
-          item => {
-
-            html += `
-              <tr>
-
-                <td>
-                  ${escapeHtml(
-                    item.lead_name ||
-                    "-"
-                  )}
-                </td>
-
-                <td>
-                  ${escapeHtml(
-                    item.lead_whatsapp ||
-                    "-"
-                  )}
-                </td>
-
-                <td>
-                  ${escapeHtml(
-                    item.status ||
-                    "-"
-                  )}
-                </td>
-
-                <td>
-
-                  ${
-                    item.created_at
-
-                      ? new Date(
-                          item.created_at
-                        ).toLocaleDateString(
-                          "pt-BR"
-                        )
-
-                      : "-"
-                  }
-
-                </td>
-
-              </tr>
-            `;
-
-          }
-        );
-
-
-      html += `
-          </tbody>
-
-        </table>
+          Nenhum ticket disponível.
 
         </div>
-      `;
+        `;
 
-
-      area.innerHTML =
-        html;
-
-
-    } catch (error) {
-
-      console.error(error);
-
-      area.innerHTML =
-        `<div class="status-message">
-          Não foi possível carregar as indicações.
-        </div>`;
+      return;
 
     }
 
-  }
 
+    let html = `
 
-  /* =========================================
-     TICKETS
-  ========================================= */
+      <div class="table-wrapper">
 
-  async function loadTickets() {
+      <table>
 
-    const area =
-      document.getElementById(
-        "ticketsArea"
-      );
+      <thead>
 
+      <tr>
 
-    try {
+        <th>
+          Código
+        </th>
 
-      const data =
-        await api(
-          "/api/admin/tickets"
-        );
+        <th>
+          Aluno
+        </th>
 
+        <th>
+          Status
+        </th>
 
-      const items =
-        data.tickets ||
-        data.results ||
-        data.data ||
-        [];
+        <th>
+          Data
+        </th>
 
+      </tr>
 
-      if (!items.length) {
+      </thead>
 
-        area.innerHTML =
-          `<div class="empty">
-            Nenhum ticket disponível.
-          </div>`;
+      <tbody>
 
-        return;
+    `;
 
-      }
 
-
-      let html = `
-        <div class="table-wrapper">
-
-        <table>
-
-          <thead>
-
-            <tr>
-
-              <th>
-                Código
-              </th>
-
-              <th>
-                Status
-              </th>
-
-              <th>
-                Data
-              </th>
-
-            </tr>
-
-          </thead>
-
-          <tbody>
-      `;
-
-
-      items
-        .slice(0, 50)
-        .forEach(
-          item => {
-
-            html += `
-              <tr>
-
-                <td>
-                  <strong>
-                    ${escapeHtml(
-                      item.code ||
-                      "-"
-                    )}
-                  </strong>
-                </td>
-
-                <td>
-                  ${escapeHtml(
-                    item.status ||
-                    "-"
-                  )}
-                </td>
-
-                <td>
-
-                  ${
-                    item.created_at
-
-                      ? new Date(
-                          item.created_at
-                        ).toLocaleDateString(
-                          "pt-BR"
-                        )
-
-                      : "-"
-                  }
-
-                </td>
-
-              </tr>
-            `;
-
-          }
-        );
-
-
-      html += `
-          </tbody>
-
-        </table>
-
-        </div>
-      `;
-
-
-      area.innerHTML =
-        html;
-
-
-    } catch (error) {
-
-      console.error(error);
-
-      area.innerHTML =
-        `<div class="status-message">
-          Não foi possível carregar os tickets.
-        </div>`;
-
-    }
-
-  }
-
-
-  /* =========================================
-     PRÊMIOS
-  ========================================= */
-
-  async function loadPrizes() {
-
-    const area =
-      document.getElementById(
-        "prizesArea"
-      );
-
-
-    try {
-
-      const data =
-        await api(
-          "/api/admin/prizes"
-        );
-
-
-      const items =
-        data.prizes ||
-        data.results ||
-        data.data ||
-        [];
-
-
-      if (!items.length) {
-
-        area.innerHTML =
-          `<div class="empty">
-            Nenhum prêmio cadastrado.
-          </div>`;
-
-        return;
-
-      }
-
-
-      let html = `
-        <div class="table-wrapper">
-
-        <table>
-
-          <thead>
-
-            <tr>
-
-              <th>
-                Prêmio
-              </th>
-
-              <th>
-                Estoque
-              </th>
-
-              <th>
-                Ativo
-              </th>
-
-            </tr>
-
-          </thead>
-
-          <tbody>
-      `;
-
-
-      items.forEach(
+    items
+      .slice(0, 50)
+      .forEach(
         item => {
 
           html += `
+
             <tr>
 
               <td>
-                ${escapeHtml(
-                  item.name ||
-                  "-"
-                )}
+
+                <strong>
+
+                  ${escapeHtml(
+                    item.code ||
+                    "-"
+                  )}
+
+                </strong>
+
               </td>
 
+
               <td>
-                ${item.stock ?? 0}
+
+                ${escapeHtml(
+                  item.student_name ||
+                  "-"
+                )}
+
               </td>
+
+
+              <td>
+
+                ${escapeHtml(
+                  item.status ||
+                  "-"
+                )}
+
+              </td>
+
 
               <td>
 
                 ${
-                  item.active
+                  item.created_at
 
-                    ? `
-                      <span
-                        class="badge badge-green"
-                      >
-                        Ativo
-                      </span>
-                    `
+                    ? new Date(
+                        item.created_at
+                      )
+                      .toLocaleDateString(
+                        "pt-BR"
+                      )
 
-                    : `
-                      <span
-                        class="badge badge-red"
-                      >
-                        Inativo
-                      </span>
-                    `
+                    : "-"
                 }
 
               </td>
 
             </tr>
+
           `;
 
         }
       );
 
 
-      html += `
-          </tbody>
+    html += `
 
-        </table>
+      </tbody>
 
-        </div>
+      </table>
+
+      </div>
+
+    `;
+
+
+    area.innerHTML =
+      html;
+
+
+  } catch (error) {
+
+    console.error(error);
+
+
+    area.innerHTML =
+      `
+      <div class="status-message">
+
+        Não foi possível carregar os tickets.
+
+      </div>
       `;
 
-
-      area.innerHTML =
-        html;
-
-
-    } catch (error) {
-
-      console.error(error);
-
-      area.innerHTML =
-        `<div class="status-message">
-          Não foi possível carregar os prêmios.
-        </div>`;
-
-    }
-
   }
 
-
-  /* =========================================
-     LOGOUT
-  ========================================= */
-
-  logoutButton.addEventListener(
-    "click",
-    async function() {
-
-      try {
-
-        await api(
-          "/api/admin/logout",
-          {
-            method: "POST"
-          }
-        );
-
-      } catch (error) {
-
-        console.log(
-          "Sessão já encerrada."
-        );
-
-      }
+}
 
 
-      clearToken();
+/* ==================================================
+PRÊMIOS
+================================================== */
 
-      showLogin();
+async function loadPrizes() {
+
+  const area =
+    document.getElementById(
+      "prizesArea"
+    );
 
 
-      document.getElementById(
-        "password"
-      ).value = "";
+  try {
 
-    }
-  );
-
-
-  /* =========================================
-     ESCAPE HTML
-  ========================================= */
-
-  function escapeHtml(
-    value
-  ) {
-
-    return String(
-      value ?? ""
-    )
-      .replaceAll(
-        "&",
-        "&amp;"
-      )
-      .replaceAll(
-        "<",
-        "&lt;"
-      )
-      .replaceAll(
-        ">",
-        "&gt;"
-      )
-      .replaceAll(
-        '"',
-        "&quot;"
-      )
-      .replaceAll(
-        "'",
-        "&#039;"
+    const data =
+      await api(
+        "/api/admin/prizes"
       );
 
+
+    const items =
+      data.prizes ||
+      [];
+
+
+    if (!items.length) {
+
+      area.innerHTML =
+        `
+        <div class="empty">
+
+          Nenhum prêmio cadastrado.
+
+        </div>
+        `;
+
+      return;
+
+    }
+
+
+    let html = `
+
+      <div class="table-wrapper">
+
+      <table>
+
+      <thead>
+
+      <tr>
+
+        <th>
+          Prêmio
+        </th>
+
+        <th>
+          Estoque
+        </th>
+
+        <th>
+          Status
+        </th>
+
+      </tr>
+
+      </thead>
+
+      <tbody>
+
+    `;
+
+
+    items.forEach(
+      item => {
+
+        html += `
+
+          <tr>
+
+            <td>
+
+              ${escapeHtml(
+                item.icon ||
+                "🎁"
+              )}
+
+              &nbsp;
+
+              <strong>
+
+                ${escapeHtml(
+                  item.name ||
+                  "-"
+                )}
+
+              </strong>
+
+            </td>
+
+
+            <td>
+
+              ${item.stock ?? 0}
+
+            </td>
+
+
+            <td>
+
+              ${
+                item.active
+
+                  ?
+
+                  `
+                  <span
+                    class="
+                      badge
+                      badge-green
+                    "
+                  >
+                    ATIVO
+                  </span>
+                  `
+
+                  :
+
+                  `
+                  <span
+                    class="
+                      badge
+                      badge-red
+                    "
+                  >
+                    INATIVO
+                  </span>
+                  `
+              }
+
+            </td>
+
+          </tr>
+
+        `;
+
+      }
+    );
+
+
+    html += `
+
+      </tbody>
+
+      </table>
+
+      </div>
+
+    `;
+
+
+    area.innerHTML =
+      html;
+
+
+  } catch (error) {
+
+    console.error(error);
+
+
+    area.innerHTML =
+      `
+      <div class="status-message">
+
+        Não foi possível carregar os prêmios.
+
+      </div>
+      `;
+
   }
 
+}
 
-  /* =========================================
-     INICIAR
-  ========================================= */
 
-  checkSession();
+/* ==================================================
+LOGOUT
+================================================== */
+
+logoutButton.onclick =
+  async function() {
+
+    try {
+
+      await api(
+        "/api/admin/logout",
+        {
+          method:
+            "POST"
+        }
+      );
+
+    } catch {}
+
+    clearToken();
+
+    showLogin();
+
+  };
+
+
+/* ==================================================
+SEGURANÇA HTML
+================================================== */
+
+function escapeHtml(
+  value
+) {
+
+  return String(
+    value ?? ""
+  )
+
+  .replaceAll(
+    "&",
+    "&amp;"
+  )
+
+  .replaceAll(
+    "<",
+    "&lt;"
+  )
+
+  .replaceAll(
+    ">",
+    "&gt;"
+  )
+
+  .replaceAll(
+    '"',
+    "&quot;"
+  )
+
+  .replaceAll(
+    "'",
+    "&#039;"
+  );
+
+}
+
+
+function escapeJs(
+  value
+) {
+
+  return String(
+    value ?? ""
+  )
+  .replaceAll(
+    "\\",
+    "\\\\"
+  )
+  .replaceAll(
+    "'",
+    "\\'"
+  )
+  .replaceAll(
+    "\n",
+    " "
+  )
+  .replaceAll(
+    "\r",
+    " "
+  );
+
+}
+
+
+/* ==================================================
+INICIAR
+================================================== */
+
+checkSession();
 
 </script>
 
 </body>
+
 </html>
